@@ -1,0 +1,15 @@
+{
+  "name": "VegeKeto – Dein Plan",
+  "short_name": "VegeKeto",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#f5f0e8",
+  "theme_color": "#2d4a3e",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2311/2311991.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
