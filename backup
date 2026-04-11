@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    const SUPABASE_URL='https://smzvvpvnbqbeafgboasj.supabase.co';
+    const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtenZ2cHZuYnFiZWFmZ2JvYXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NjUzNTQsImV4cCI6MjA5MTI0MTM1NH0.y6pnzwDlfFrlSco4Pohuz6eTvxx7du3UYR_NdO-EXao';
+    const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    const USER_ID='mein_planer';
+  </script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="theme-color" content="#2d4a3e"/>
+  <meta name="description" content="Vegetarisch-Ketogener Ernährungsplan"/>
+  <title>VegeKeto – Dein Plan</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --green-dark:#1a3028;--green-mid:#2d4a3e;--green:#3d6b58;--green-light:#5a8f77;
+      --cream:#f5f0e8;--cream2:#ede8dc;--cream3:#e0d9cc;
+      --amber:#c8853a;--amber-light:#e8a85a;--red:#c04444;--blue:#3a6b8a;
+      --text:#1a2420;--text2:#3d5048;--text3:#6b7d74;
+      --radius:12px;--radius-lg:18px;
+      --nav-h:60px;--bottom-nav-h:64px;
+    }
+    html,body{height:100%}
+    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;overflow-x:hidden;padding-bottom:var(--bottom-nav-h)}
+    h1,h2,h3,h4{font-family:'DM Serif Display',serif}
+
+    /* ── TOP HEADER (desktop only) ── */
+    .app-header{background:var(--green-dark);color:var(--cream);padding:0 1.5rem;display:flex;align-items:center;justify-content:space-between;height:var(--nav-h);position:sticky;top:0;z-index:100;box-shadow:0 2px 20px rgba(0,0,0,0.3)}
+    .app-header h1{font-size:1.4rem;font-weight:400;letter-spacing:0.02em;color:var(--cream)}
+    .logo-dot{width:8px;height:8px;background:var(--amber-light);border-radius:50%;display:inline-block;margin-right:8px;vertical-align:middle}
+    .desktop-nav{display:flex;gap:4px}
+    .desktop-nav button{background:none;border:none;color:rgba(245,240,232,0.65);padding:10px 14px;cursor:pointer;border-radius:8px;font-size:0.82rem;font-family:'DM Sans',sans-serif;font-weight:500;letter-spacing:0.03em;transition:all 0.2s;white-space:nowrap;min-height:44px}
+    .desktop-nav button.active,.desktop-nav button:hover{color:var(--cream);background:rgba(245,240,232,0.14)}
+
+    /* ── BOTTOM NAV (mobile) ── */
+    .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--bottom-nav-h);background:var(--green-dark);z-index:100;box-shadow:0 -2px 16px rgba(0,0,0,0.25);align-items:stretch}
+    .bottom-nav button{flex:1;background:none;border:none;color:rgba(245,240,232,0.55);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:0.65rem;font-family:'DM Sans',sans-serif;font-weight:500;cursor:pointer;padding:6px 0;transition:color 0.2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-width:44px}
+    .bottom-nav button .nav-icon{font-size:1.2rem;line-height:1}
+    .bottom-nav button.active{color:var(--amber-light)}
+    .bottom-nav button.active .nav-icon{transform:translateY(-1px)}
+
+    @media(max-width:640px){
+      .desktop-nav{display:none}
+      .bottom-nav{display:flex}
+      .main{padding:1rem 0.8rem}
+      .grid-2{grid-template-columns:1fr}
+      .grid-3{grid-template-columns:1fr 1fr}
+    }
+    @media(min-width:641px){
+      body{padding-bottom:0}
+    }
+
+    .main{max-width:1100px;margin:0 auto;padding:1.5rem}
+    .card{background:white;border-radius:var(--radius-lg);padding:1.25rem 1.5rem;border:1px solid var(--cream3);margin-bottom:1rem}
+    .card-sm{background:white;border-radius:var(--radius);padding:1rem;border:1px solid var(--cream3)}
+    .btn{border:none;border-radius:8px;padding:9px 16px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:500;cursor:pointer;transition:all 0.2s;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-height:40px}
+    .btn-primary{background:var(--green);color:white}.btn-primary:hover{background:var(--green-light)}
+    .btn-secondary{background:var(--cream2);color:var(--text)}.btn-secondary:hover{background:var(--cream3)}
+    .btn-amber{background:var(--amber);color:white}.btn-amber:hover{background:var(--amber-light)}
+    .btn-sm{padding:6px 12px;font-size:0.78rem;min-height:34px}
+    .btn-danger{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+    .progress-bar{height:10px;background:var(--cream2);border-radius:5px;overflow:hidden;margin:4px 0}
+    .progress-fill{height:100%;border-radius:5px;transition:width 0.5s ease}
+    .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:0.72rem;font-weight:500}
+    .badge-green{background:#d1fae5;color:#065f46}
+    .badge-amber{background:#fef3c7;color:#92400e}
+    .badge-red{background:#fee2e2;color:#991b1b}
+    .badge-blue{background:#dbeafe;color:#1e40af}
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+    input,select,textarea{font-family:'DM Sans',sans-serif;border:1px solid var(--cream3);border-radius:8px;padding:9px 12px;font-size:0.9rem;width:100%;background:white;color:var(--text);outline:none;transition:border-color 0.2s}
+    input:focus,select:focus,textarea:focus{border-color:var(--green-light)}
+    label{font-size:0.82rem;font-weight:500;color:var(--text2);display:block;margin-bottom:4px}
+    .form-group{margin-bottom:1rem}
+    .tag{display:inline-flex;align-items:center;background:var(--cream2);border-radius:6px;padding:3px 8px;font-size:0.76rem;color:var(--text2);margin:2px}
+    .meal-card{border:1.5px solid var(--cream3);border-radius:var(--radius);padding:0.75rem;cursor:pointer;transition:all 0.2s;background:white;position:relative}
+    .meal-card:hover{border-color:var(--green-light);box-shadow:0 2px 12px rgba(45,74,62,0.1)}
+    .meal-card.eaten{border-color:#10b981;background:#f0fdf4}
+    .day-header{background:var(--green-dark);color:var(--cream);padding:6px 4px;border-radius:var(--radius) var(--radius) 0 0;font-size:0.75rem;font-weight:500;text-align:center}
+    .day-col{border-radius:var(--radius);overflow:hidden;border:1px solid var(--cream3)}
+    .check-box{width:22px;height:22px;border-radius:6px;border:2px solid var(--cream3);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s;flex-shrink:0;touch-action:manipulation}
+    .check-box.checked{background:var(--green);border-color:var(--green)}
+    .check-box.checked::after{content:'✓';color:white;font-size:0.8rem;font-weight:700}
+    .tabs{display:flex;gap:2px;background:var(--cream2);border-radius:10px;padding:3px;margin-bottom:1rem}
+    .tab{flex:1;text-align:center;padding:8px;border-radius:8px;cursor:pointer;font-size:0.82rem;font-weight:500;color:var(--text3);transition:all 0.2s;border:none;background:none;font-family:'DM Sans',sans-serif;min-height:38px;touch-action:manipulation}
+    .tab.active{background:white;color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.1)}
+    .shopping-item{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--cream2)}
+    .shopping-item:last-child{border-bottom:none}
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:200;display:flex;align-items:flex-end;justify-content:center;padding:0}
+    @media(min-width:641px){.modal-overlay{align-items:center;padding:1rem}}
+    .modal{background:white;border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:1.5rem;width:100%;max-height:90vh;overflow-y:auto}
+    @media(min-width:641px){.modal{border-radius:var(--radius-lg);max-width:580px}}
+    .snack{position:fixed;bottom:calc(var(--bottom-nav-h) + 12px);right:1rem;left:1rem;background:var(--green-dark);color:var(--cream);padding:12px 18px;border-radius:10px;font-size:0.85rem;z-index:300;animation:slideIn 0.3s ease;box-shadow:0 4px 20px rgba(0,0,0,0.2);text-align:center}
+    @media(min-width:641px){.snack{left:auto;bottom:1.5rem;right:1.5rem;text-align:left}}
+    @keyframes slideIn{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .macro-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+    .macro-label{font-size:0.78rem;color:var(--text3);width:64px;flex-shrink:0}
+    .macro-value{font-size:0.78rem;font-weight:500;color:var(--text2);width:90px;text-align:right;flex-shrink:0}
+    .electrolyte-btn{display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;cursor:pointer;transition:all 0.2s;border:1.5px solid var(--cream3);background:white;touch-action:manipulation}
+    .electrolyte-btn.done{border-color:#10b981;background:#f0fdf4}
+    .leftover-card{background:#fffbf0;border:1.5px dashed var(--amber);border-radius:var(--radius);padding:1rem;margin-bottom:0.75rem}
+    .recipe-macro{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:6px;font-size:0.75rem;font-weight:600}
+    .rm-carb{background:#dbeafe;color:#1e40af}
+    .rm-prot{background:#d1fae5;color:#065f46}
+    .rm-fat{background:#fef3c7;color:#92400e}
+    .rm-cal{background:#f3e8ff;color:#6b21a8}
+    .week-nav{display:flex;align-items:center;gap:0.75rem}
+    .week-nav button{background:white;border:1px solid var(--cream3);border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;touch-action:manipulation}
+    .week-nav button:hover{border-color:var(--green-light)}
+    .week-nav span{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--text)}
+    .loading-overlay{position:fixed;inset:0;background:var(--cream);z-index:500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem}
+    .spinner{width:36px;height:36px;border:3px solid var(--cream3);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .drag-active{border-color:var(--green-light)!important;background:#f0fdf4!important}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+  const {useState,useEffect,useCallback,useRef,useMemo}=React;
+
+  // ─── CONSTANTS ──────────────────────────────────────────────────────────────
+  const PERSON={name:"Ich",gender:"m",height:190,weight:85,age:35};
+
+  function calcMacros(p){
+    const bmr=p.gender==="m"?88.36+13.4*p.weight+4.8*p.height-5.7*p.age:447.6+9.2*p.weight+3.1*p.height-4.3*p.age;
+    const tdee=Math.round(bmr*1.4);
+    const protein=Math.round(p.weight*1.4);
+    const carbs=25;
+    const fat=Math.round((tdee-protein*4-carbs*4)/9);
+    return{kcal:tdee,protein,carbs,fat};
+  }
+
+  const RECIPES=[
+    {id:"r1",name:"Avocado-Eier-Bowl",type:"breakfast",prepMin:8,macros:{kcal:380,carbs:6,protein:18,fat:30},ingredients:["2 Eier","1 Avocado","20g Feta","Salz, Pfeffer","1 EL Olivenöl"],steps:"Eier spiegeln. Avocado würfeln. Alles in einer Bowl anrichten, Feta drüber.",tags:["schnell","B12","Ω3"],batchDays:1},
+    {id:"r2",name:"Blumenkohl-Käse-Omelette",type:"breakfast",prepMin:10,macros:{kcal:340,carbs:7,protein:22,fat:24},ingredients:["3 Eier","50g Blumenkohl (geraspelt)","30g Cheddar","1 EL Butter","Kräuter"],steps:"Eier verquirlen, Blumenkohl unterheben, in Butter braten, Käse schmelzen lassen.",tags:["schnell","low-carb"],batchDays:1},
+    {id:"r3",name:"Griechisches Omelett mit Spinat",type:"breakfast",prepMin:8,macros:{kcal:360,carbs:5,protein:24,fat:26},ingredients:["3 Eier","40g Babyspinat","20g Kalamata-Oliven","20g Feta","Oregano"],steps:"Eier schlagen, Spinat kurz andünsten, alles zusammen stocken lassen, Feta drüber.",tags:["schnell","Eisen"],batchDays:1},
+    {id:"r4",name:"Keto-Müsli (Abends vorbereiten)",type:"breakfast",prepMin:5,macros:{kcal:310,carbs:8,protein:12,fat:26},ingredients:["40g Kokosraspeln","30g Walnüsse","1 EL Chiasamen","150ml Kokosmilch","Zimtpulver"],steps:"Alles abends mischen, im Kühlschrank quellen lassen. Morgens fertig.",tags:["prep","Ω3"],batchDays:3},
+    {id:"r5",name:"Avocado-Rösti mit Ei",type:"breakfast",prepMin:10,macros:{kcal:400,carbs:7,protein:16,fat:34},ingredients:["2 Eier","1 Avocado","30g Mandelmehl","Salz","Olivenöl"],steps:"Avocado zerdrücken, mit Mandelmehl & Ei mischen, kleine Rösti formen, braten.",tags:["schnell","Ω3"],batchDays:1},
+    {id:"r6",name:"Zucchini-Halloumi-Pfanne",type:"lunch",prepMin:20,macros:{kcal:480,carbs:10,protein:28,fat:36},ingredients:["200g Halloumi","2 Zucchini","1 Paprika","2 EL Olivenöl","Knoblauch","Rosmarin"],steps:"Halloumi anbraten. Gemüse dazu, al dente garen. Mit Rosmarin & Knoblauch würzen.",tags:["batch"],batchDays:2},
+    {id:"r7",name:"Gerösteter Blumenkohl mit Tahini",type:"lunch",prepMin:30,macros:{kcal:420,carbs:14,protein:16,fat:32},ingredients:["1 Blumenkohl","3 EL Olivenöl","2 EL Tahini","1 Zitrone","Petersilie","Paprikapulver"],steps:"Blumenkohl in Röschen, mit Öl & Paprika rösten (200°C, 25 Min). Mit Tahini-Soße servieren.",tags:["batch","vegan"],batchDays:3},
+    {id:"r8",name:"Keto Buddha Bowl",type:"lunch",prepMin:20,macros:{kcal:510,carbs:12,protein:22,fat:40},ingredients:["150g Tempeh","1 Avocado","80g Edamame","Rucola","2 EL Tahini","Sesam"],steps:"Tempeh anbraten. Bowl mit Rucola, Edamame, Avocado anrichten. Tahini-Dressing darüber.",tags:["protein","vegan"],batchDays:1},
+    {id:"r9",name:"Pilz-Käse-Suppe",type:"lunch",prepMin:25,macros:{kcal:390,carbs:9,protein:18,fat:30},ingredients:["400g Champignons","200ml Sahne","100g Frischkäse","1 Zwiebel","Thymian","Butter"],steps:"Zwiebel & Pilze in Butter anschwitzen. Sahne & Frischkäse einrühren, köcheln. Pürieren.",tags:["batch","comfort"],batchDays:3},
+    {id:"r10",name:"Brokkoli-Käse-Auflauf",type:"lunch",prepMin:35,macros:{kcal:490,carbs:11,protein:28,fat:36},ingredients:["500g Brokkoli","200ml Sahne","150g Gouda","2 Eier","Muskat","Butter"],steps:"Brokkoli blanchieren. Sahne-Ei-Käse-Mix darüber, 25 Min bei 180°C backen.",tags:["batch"],batchDays:3},
+    {id:"r11",name:"Frischkäse-Wraps (Salat)",type:"lunch",prepMin:10,macros:{kcal:350,carbs:8,protein:18,fat:26},ingredients:["4 Salatblätter","100g Frischkäse","60g Feta","Gurke","Dill"],steps:"Salatblätter als Wrap nutzen, mit Frischkäse bestreichen, Füllung einrollen.",tags:["schnell","prep"],batchDays:1},
+    {id:"r12",name:"Auberginen-Parmesan",type:"dinner",prepMin:35,macros:{kcal:520,carbs:13,protein:26,fat:38},ingredients:["2 Auberginen","150g Mozzarella","100g Parmesan","400g Tomaten","Basilikum","Olivenöl"],steps:"Auberginen scheibeln, salzen. Schichten: Aubergine – Tomate – Käse. 25 Min bei 180°C.",tags:["batch","klassiker"],batchDays:2},
+    {id:"r13",name:"Keto-Käsespätzle (Blumenkohl)",type:"dinner",prepMin:30,macros:{kcal:560,carbs:11,protein:30,fat:42},ingredients:["1 Blumenkohl","200g Bergkäse","100ml Sahne","2 Zwiebeln","Butter","Muskat"],steps:"Blumenkohl als Spätzle-Ersatz vorbereiten. Mit Käsesahnesoße überziehen, Röstzwiebeln servieren.",tags:["comfort","batch"],batchDays:2},
+    {id:"r14",name:"Griechischer Salat mit Tempeh",type:"dinner",prepMin:15,macros:{kcal:430,carbs:12,protein:24,fat:32},ingredients:["200g Tempeh","1 Gurke","2 Tomaten","100g Feta","Oliven","Oregano","Olivenöl"],steps:"Tempeh anbraten. Gemüse würfeln, Feta dazu, Oregano, Olivenöl – Tempeh obendrauf.",tags:["schnell","protein"],batchDays:1},
+    {id:"r15",name:"Shakshuka (Keto)",type:"dinner",prepMin:25,macros:{kcal:370,carbs:11,protein:20,fat:26},ingredients:["4 Eier","400g Tomaten","1 Paprika","Cumin","Paprikapulver","Feta","Petersilie"],steps:"Tomaten & Paprika köcheln. Mulden eindrücken, Eier reingeben, stocken lassen. Mit Feta & Petersilie.",tags:["schnell","comfort"],batchDays:1},
+    {id:"r16",name:"Pak-Choi-Tofu-Pfanne",type:"dinner",prepMin:20,macros:{kcal:380,carbs:10,protein:24,fat:26},ingredients:["300g Tofu","2 Pak Choi","2 EL Tamari","Ingwer","Knoblauch","Sesamöl"],steps:"Tofu scharf anbraten. Pak Choi dazu. Mit Tamari, Ingwer, Knoblauch würzen. Sesamöl am Ende.",tags:["vegan","asiatisch"],batchDays:1},
+    {id:"r17",name:"Spinat-Ricotta-Bällchen",type:"dinner",prepMin:30,macros:{kcal:440,carbs:9,protein:24,fat:33},ingredients:["250g Ricotta","200g Spinat","2 Eier","50g Parmesan","Muskat","Olivenöl"],steps:"Spinat auspressen, mit Ricotta, Ei, Parmesan mischen, Bällchen formen, backen.",tags:["batch","protein"],batchDays:2},
+    {id:"r18",name:"Kokos-Blumenkohl-Curry",type:"dinner",prepMin:30,macros:{kcal:460,carbs:14,protein:14,fat:36},ingredients:["1 Blumenkohl","400ml Kokosmilch","2 EL Currypaste","Limette","Koriander","Ingwer"],steps:"Blumenkohl in Currypaste anrösten, Kokosmilch dazu, 15 Min köcheln. Mit Limette & Koriander.",tags:["vegan","batch"],batchDays:3},
+  ];
+
+  function buildWeekPlan(){
+    const plan={};
+    const start=new Date(2025,0,6);
+    const bf=RECIPES.filter(r=>r.type==="breakfast");
+    const lu=RECIPES.filter(r=>r.type==="lunch");
+    const di=RECIPES.filter(r=>r.type==="dinner");
+    for(let w=0;w<6;w++){
+      for(let d=0;d<7;d++){
+        const date=new Date(start);
+        date.setDate(date.getDate()+w*7+d);
+        const key=dk(date);
+        plan[key]={
+          breakfast:bf[(w*7+d)%bf.length],
+          lunch:lu[(w*7+d+1)%lu.length],
+          dinner:di[(w*7+d+2)%di.length],
+          eaten:{breakfast:false,lunch:false,dinner:false},
+        };
+      }
+    }
+    return plan;
+  }
+
+  // ─── HELPERS ────────────────────────────────────────────────────────────────
+  function dk(d){return d instanceof Date?d.toISOString().slice(0,10):d}
+  function fmt(v){return typeof v==="number"?Math.round(v):v}
+  function getMonday(d){const c=new Date(d),day=c.getDay(),diff=c.getDate()-day+(day===0?-6:1);c.setDate(diff);return c}
+  function weekDates(mon){return Array.from({length:7},(_,i)=>{const d=new Date(mon);d.setDate(d.getDate()+i);return d})}
+  function getISOWeek(d){const date=new Date(d);date.setHours(0,0,0,0);date.setDate(date.getDate()+3-(date.getDay()+6)%7);const w1=new Date(date.getFullYear(),0,4);return 1+Math.round(((date-w1)/86400000-3+(w1.getDay()+6)%7)/7)}
+  const DAYS=["Mo","Di","Mi","Do","Fr","Sa","So"];
+  const MONTHS=["Jan","Feb","Mär","Apr","Mai","Jun","Jul","Aug","Sep","Okt","Nov","Dez"];
+
+  // ─── SUPABASE LAYER ─────────────────────────────────────────────────────────
+  async function dbLoadPlan(){
+    const{data,error}=await sb.from("calendar_days").select("*").eq("user_id",USER_ID);
+    if(error||!data||data.length===0)return null;
+    const plan=buildWeekPlan();
+    data.forEach(row=>{
+      const key=row.date_key;
+      if(plan[key]){
+        plan[key].eaten={breakfast:row.eaten?.breakfast||false,lunch:row.eaten?.lunch||false,dinner:row.eaten?.dinner||false};
+        if(row.breakfast_id){const r=RECIPES.find(x=>x.id===row.breakfast_id);if(r)plan[key].breakfast=r;}
+        if(row.lunch_id){const r=RECIPES.find(x=>x.id===row.lunch_id);if(r)plan[key].lunch=r;}
+        if(row.dinner_id){const r=RECIPES.find(x=>x.id===row.dinner_id);if(r)plan[key].dinner=r;}
+      }
+    });
+    return plan;
+  }
+
+  async function dbSaveDay(key,day){
+    await sb.from("calendar_days").upsert({
+      user_id:USER_ID,date_key:key,
+      breakfast_id:day.breakfast?.id||null,
+      lunch_id:day.lunch?.id||null,
+      dinner_id:day.dinner?.id||null,
+      eaten:day.eaten
+    },{onConflict:"user_id,date_key"});
+  }
+
+  async function dbLoadElectrolytes(){
+    const{data}=await sb.from("electrolytes").select("*").eq("user_id",USER_ID);
+    if(!data)return{};
+    const obj={};
+    data.forEach(r=>{obj[r.date_key+"_mg"]=r.magnesium||false;obj[r.date_key+"_k"]=r.kalium||false;obj[r.date_key+"_salt"]=r.natrium||false;});
+    return obj;
+  }
+
+  async function dbSaveElectrolyte(dateKey,field,value){
+    const mapping={mg:"magnesium",k:"kalium",salt:"natrium"};
+    await sb.from("electrolytes").upsert({user_id:USER_ID,date_key:dateKey,[mapping[field]]:value},{onConflict:"user_id,date_key"});
+  }
+
+  async function dbLoadRecipes(){
+    const{data}=await sb.from("custom_recipes").select("*").eq("user_id",USER_ID);
+    if(!data)return[];
+    return data.map(r=>({...r.recipe_data,id:"c"+r.id,supabase_id:r.id,custom:true}));
+  }
+
+  async function dbSaveRecipe(recipe){
+    const{data}=await sb.from("custom_recipes").insert({user_id:USER_ID,recipe_data:recipe}).select().single();
+    return data?("c"+data.id):recipe.id;
+  }
+
+  async function dbDeleteRecipe(supabaseId){
+    await sb.from("custom_recipes").delete().eq("id",supabaseId).eq("user_id",USER_ID);
+  }
+
+  // ─── COMPONENTS ─────────────────────────────────────────────────────────────
+  function ProgressBar({value,max,color="#3d6b58",label,unit="g"}){
+    const pct=Math.min(100,max>0?(value/max)*100:0);
+    const over=value>max;
+    return(
+      <div className="macro-row">
+        <span className="macro-label">{label}</span>
+        <div className="progress-bar" style={{flex:1}}>
+          <div className="progress-fill" style={{width:pct+"%",background:over?"#ef4444":color}}/>
+        </div>
+        <span className="macro-value" style={{color:over?"#c04444":"var(--text2)"}}>{fmt(value)}/{max}{unit}</span>
+      </div>
+    );
+  }
+
+  function Snackbar({msg,onClose}){
+    useEffect(()=>{const t=setTimeout(onClose,3200);return()=>clearTimeout(t)},[]);
+    return <div className="snack">{msg}</div>;
+  }
+
+  function LoadingScreen(){
+    return(
+      <div className="loading-overlay">
+        <div className="spinner"/>
+        <p style={{color:"var(--text3)",fontSize:"0.88rem"}}>Daten werden geladen…</p>
+      </div>
+    );
+  }
+
+  // ─── APP ────────────────────────────────────────────────────────────────────
+  function App(){
+    const [loading,setLoading]=useState(true);
+    const [tab,setTab]=useState("dashboard");
+    const [plan,setPlan]=useState({});
+    const [customRecipes,setCustomRecipes]=useState([]);
+    const [electrolytes,setElectrolytes]=useState({});
+    const [batchMode,setBatchMode]=useState(false);
+    const [currentWeek,setCurrentWeek]=useState(()=>getMonday(new Date()));
+    const [shoppingWeek,setShoppingWeek]=useState(()=>getMonday(new Date()));
+    const [snack,setSnack]=useState(null);
+    const [modal,setModal]=useState(null);
+
+    const macros=calcMacros(PERSON);
+    const allRecipes=useMemo(()=>[...RECIPES,...customRecipes],[customRecipes]);
+
+    // ── Initial load from Supabase ──
+    useEffect(()=>{
+      (async()=>{
+        const[planData,electroData,recipeData]=await Promise.all([dbLoadPlan(),dbLoadElectrolytes(),dbLoadRecipes()]);
+        setPlan(planData||buildWeekPlan());
+        setElectrolytes(electroData);
+        setCustomRecipes(recipeData);
+        setLoading(false);
+      })();
+    },[]);
+
+    const toast=useCallback((msg)=>setSnack(msg),[]);
+
+    const todayKey=dk(new Date());
+
+    function getDailyMacros(dateK){
+      const day=plan[dateK];
+      if(!day)return{kcal:0,carbs:0,protein:0,fat:0};
+      const tot={kcal:0,carbs:0,protein:0,fat:0};
+      ["breakfast","lunch","dinner"].forEach(m=>{
+        if(day.eaten[m]&&day[m])Object.keys(tot).forEach(k=>tot[k]+=(day[m].macros[k]||0));
+      });
+      return tot;
+    }
+
+    async function toggleEaten(dateK,meal){
+      setPlan(prev=>{
+        const np={...prev};
+        const d={...np[dateK],eaten:{...np[dateK].eaten}};
+        d.eaten[meal]=!d.eaten[meal];
+        np[dateK]=d;
+        dbSaveDay(dateK,d);
+        return np;
+      });
+    }
+
+    async function updatePlanDay(dateK,updates){
+      setPlan(prev=>{
+        const np={...prev,[dateK]:{...prev[dateK],...updates}};
+        dbSaveDay(dateK,np[dateK]);
+        return np;
+      });
+    }
+
+    async function toggleElectrolyte(dateK,field){
+      const key=dateK+"_"+field;
+      const newVal=!electrolytes[key];
+      setElectrolytes(e=>({...e,[key]:newVal}));
+      await dbSaveElectrolyte(dateK,field,newVal);
+    }
+
+    async function addCustomRecipe(recipe){
+      const newId=await dbSaveRecipe(recipe);
+      setCustomRecipes(r=>[...r,{...recipe,id:newId,custom:true}]);
+      toast("✅ Rezept gespeichert!");
+    }
+
+    async function deleteCustomRecipe(recipe){
+      if(recipe.supabase_id){await dbDeleteRecipe(recipe.supabase_id);}
+      setCustomRecipes(r=>r.filter(x=>x.id!==recipe.id));
+      toast("🗑 Rezept gelöscht");
+    }
+
+    function applyBatch(dateK,meal,recipe){
+      setPlan(prev=>{
+        const np={...prev};
+        const days=Object.keys(np).sort();
+        const idx=days.indexOf(dateK);
+        for(let i=0;i<(recipe.batchDays||1)&&idx+i<days.length;i++){
+          const d={...np[days[idx+i]]};
+          d[meal]=recipe;
+          np[days[idx+i]]=d;
+          dbSaveDay(days[idx+i],d);
+        }
+        return np;
+      });
+      toast(`📦 "${recipe.name}" für ${recipe.batchDays||1} Tage eingeplant!`);
+    }
+
+    const leftovers=useMemo(()=>{
+      const counts={};
+      weekDates(currentWeek).forEach(d=>{
+        const day=plan[dk(d)];
+        if(!day)return;
+        ["breakfast","lunch","dinner"].forEach(m=>{
+          day[m]?.ingredients.forEach(ing=>{
+            const base=ing.replace(/^\d+[\w\s]*\s/,"").toLowerCase();
+            counts[base]=(counts[base]||0)+1;
+          });
+        });
+      });
+      return Object.entries(counts).filter(([,n])=>n<1.5).map(([k])=>k).slice(0,5);
+    },[plan,currentWeek]);
+
+    const shoppingList=useMemo(()=>{
+      const items={};
+      weekDates(shoppingWeek).forEach(d=>{
+        const day=plan[dk(d)];
+        if(!day)return;
+        ["breakfast","lunch","dinner"].forEach(m=>{
+          day[m]?.ingredients.forEach(ing=>{
+            const norm=ing.trim().toLowerCase();
+            items[norm]=(items[norm]||0)+1;
+          });
+        });
+      });
+      return Object.entries(items).sort((a,b)=>a[0].localeCompare(b[0]));
+    },[plan,shoppingWeek]);
+
+    const navItems=[
+      {k:"dashboard",icon:"🏠",label:"Start"},
+      {k:"calendar",icon:"📅",label:"Plan"},
+      {k:"shopping",icon:"🛒",label:"Einkauf"},
+      {k:"health",icon:"🩺",label:"Gesundheit"},
+      {k:"recipes",icon:"📖",label:"Rezepte"},
+    ];
+
+    if(loading)return <LoadingScreen/>;
+
+    const todayMacros=getDailyMacros(todayKey);
+
+    return(
+      <div>
+        <header className="app-header">
+          <h1><span className="logo-dot"/>VegeKeto</h1>
+          <nav className="desktop-nav">
+            {navItems.map(({k,label})=>(
+              <button key={k} className={tab===k?"active":""} onClick={()=>setTab(k)}>{label}</button>
+            ))}
+          </nav>
+        </header>
+
+        <div className="main">
+          {tab==="dashboard"&&<Dashboard macros={macros} todayMacros={todayMacros} plan={plan} todayKey={todayKey} toggleEaten={toggleEaten} electrolytes={electrolytes} toggleElectrolyte={toggleElectrolyte} toast={toast}/>}
+          {tab==="calendar"&&<CalendarView plan={plan} updatePlanDay={updatePlanDay} currentWeek={currentWeek} setCurrentWeek={setCurrentWeek} toggleEaten={toggleEaten} batchMode={batchMode} setBatchMode={setBatchMode} applyBatch={applyBatch} allRecipes={allRecipes} leftovers={leftovers} toast={toast} setModal={setModal}/>}
+          {tab==="shopping"&&<ShoppingView shoppingList={shoppingList} shoppingWeek={shoppingWeek} setShoppingWeek={setShoppingWeek} leftovers={leftovers}/>}
+          {tab==="health"&&<HealthView electrolytes={electrolytes} toggleElectrolyte={toggleElectrolyte}/>}
+          {tab==="recipes"&&<RecipesView customRecipes={customRecipes} allRecipes={allRecipes} addCustomRecipe={addCustomRecipe} deleteCustomRecipe={deleteCustomRecipe} toast={toast}/>}
+        </div>
+
+        <nav className="bottom-nav">
+          {navItems.map(({k,icon,label})=>(
+            <button key={k} className={tab===k?"active":""} onClick={()=>setTab(k)}>
+              <span className="nav-icon">{icon}</span>
+              <span>{label}</span>
+            </button>
+          ))}
+        </nav>
+
+        {modal&&<MealModal modal={modal} onClose={()=>setModal(null)} allRecipes={allRecipes} updatePlanDay={updatePlanDay} batchMode={batchMode} applyBatch={applyBatch} toast={toast}/>}
+        {snack&&<Snackbar msg={snack} onClose={()=>setSnack(null)}/>}
+      </div>
+    );
+  }
+
+  // ─── DASHBOARD ──────────────────────────────────────────────────────────────
+  function Dashboard({macros,todayMacros,plan,todayKey,toggleEaten,electrolytes,toggleElectrolyte,toast}){
+    const today=new Date();
+    const todayPlan=plan[todayKey];
+
+    function ElectroCheck({field,label,icon}){
+      const key=todayKey+"_"+field;
+      const done=electrolytes[key]||false;
+      return(
+        <div className={`electrolyte-btn ${done?"done":""}`} onClick={()=>toggleElectrolyte(todayKey,field)}>
+          <div className={`check-box ${done?"checked":""}`} style={{flexShrink:0}}/>
+          <div>
+            <div style={{fontWeight:500,fontSize:"0.85rem"}}>{icon} {label}</div>
+            <div style={{fontSize:"0.74rem",color:"var(--text3)"}}>Täglich einnehmen</div>
+          </div>
+        </div>
+      );
+    }
+
+    return(
+      <div>
+        <h2 style={{marginBottom:"0.25rem",fontWeight:400}}>Guten Tag! 🌿</h2>
+        <p style={{color:"var(--text3)",marginBottom:"1.5rem",fontSize:"0.88rem"}}>{today.toLocaleDateString("de-DE",{weekday:"long",day:"numeric",month:"long"})}</p>
+
+        {/* Makro-Dashboard */}
+        <div className="card">
+          <div style={{display:"flex",alignItems:"center",gap:"10px",marginBottom:"1rem"}}>
+            <div style={{width:38,height:38,borderRadius:"50%",background:"var(--green)",display:"flex",alignItems:"center",justifyContent:"center",color:"white",fontSize:"1.1rem",flexShrink:0}}>♂</div>
+            <div>
+              <div style={{fontWeight:600}}>Heutige Makros</div>
+              <div style={{fontSize:"0.75rem",color:"var(--text3)"}}>Ziel: {macros.kcal} kcal · {macros.protein}g P · {macros.fat}g F · max {macros.carbs}g C</div>
+            </div>
+          </div>
+          <ProgressBar label="Kalorien" value={todayMacros.kcal} max={macros.kcal} unit=" kcal" color="var(--green)"/>
+          <ProgressBar label="Protein" value={todayMacros.protein} max={macros.protein} color="var(--green)"/>
+          <ProgressBar label="Fett" value={todayMacros.fat} max={macros.fat} color="var(--amber)"/>
+          <ProgressBar label="Net-Carbs" value={todayMacros.carbs} max={macros.carbs} unit="g" color="var(--blue)"/>
+          {todayMacros.carbs>macros.carbs&&<div className="badge badge-red" style={{marginTop:"8px"}}>⚠ Carb-Limit überschritten!</div>}
+        </div>
+
+        {/* Heutige Mahlzeiten */}
+        {todayPlan?(
+          <div className="card">
+            <h3 style={{marginBottom:"1rem",fontWeight:400}}>Heute essen</h3>
+            <div className="grid-3">
+              {["breakfast","lunch","dinner"].map(m=>{
+                const recipe=todayPlan[m];
+                if(!recipe)return null;
+                const mLabel={breakfast:"🌅 Frühstück",lunch:"☀️ Mittagessen",dinner:"🌙 Abendessen"}[m];
+                const eaten=todayPlan.eaten[m];
+                return(
+                  <div key={m} className={`card-sm ${eaten?"eaten":""}`} style={{cursor:"pointer",border:eaten?"2px solid #10b981":"1px solid var(--cream3)"}} onClick={()=>toggleEaten(todayKey,m)}>
+                    <div style={{fontSize:"0.72rem",color:"var(--text3)",marginBottom:"3px"}}>{mLabel}</div>
+                    <div style={{fontWeight:500,fontSize:"0.85rem",marginBottom:"6px"}}>{recipe.name}</div>
+                    <div style={{display:"flex",gap:"3px",flexWrap:"wrap",marginBottom:"8px"}}>
+                      <span className="recipe-macro rm-carb">{recipe.macros.carbs}g C</span>
+                      <span className="recipe-macro rm-prot">{recipe.macros.protein}g P</span>
+                      <span className="recipe-macro rm-fat">{recipe.macros.fat}g F</span>
+                    </div>
+                    <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+                      <div className={`check-box ${eaten?"checked":""}`} style={{width:18,height:18,borderRadius:5}}/>
+                      <span style={{fontSize:"0.72rem",color:eaten?"#10b981":"var(--text3)"}}>{eaten?"Gegessen ✓":"Als gegessen markieren"}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ):(
+          <div className="card" style={{textAlign:"center",color:"var(--text3)",padding:"2rem"}}>
+            <div style={{fontSize:"2rem",marginBottom:"0.5rem"}}>📅</div>
+            <div>Kein Mahlzeitenplan für heute vorhanden.</div>
+            <div style={{fontSize:"0.82rem",marginTop:"4px"}}>Der Plan läuft vom 6. Jan bis 16. Feb 2025.</div>
+          </div>
+        )}
+
+        {/* Elektrolyte */}
+        <div className="card">
+          <h3 style={{marginBottom:"1rem",fontWeight:400}}>⚡ Elektrolyt-Check heute</h3>
+          <div className="grid-3">
+            <ElectroCheck field="mg" label="Magnesium" icon="🔋"/>
+            <ElectroCheck field="k" label="Kalium" icon="🍌"/>
+            <ElectroCheck field="salt" label="Natrium/Salz" icon="🧂"/>
+          </div>
+        </div>
+
+        {/* Makroziele Karte */}
+        <div className="card-sm" style={{background:"var(--cream2)"}}>
+          <div style={{fontWeight:500,marginBottom:"8px",fontSize:"0.85rem"}}>♂ Deine Makroziele (täglich)</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:"6px"}}>
+            {[["Kalorien",macros.kcal,"kcal"],["Protein",macros.protein,"g"],["Fett",macros.fat,"g"],["Net-Carbs","≤"+macros.carbs,"g"]].map(([l,v,u])=>(
+              <div key={l} style={{background:"white",borderRadius:"10px",padding:"8px"}}>
+                <div style={{fontSize:"0.68rem",color:"var(--text3)"}}>{l}</div>
+                <div style={{fontWeight:600,fontSize:"0.95rem",color:"var(--green)"}}>{v}<span style={{fontSize:"0.68rem",fontWeight:400,color:"var(--text3)"}}>{u}</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── CALENDAR ───────────────────────────────────────────────────────────────
+  function CalendarView({plan,updatePlanDay,currentWeek,setCurrentWeek,toggleEaten,batchMode,setBatchMode,applyBatch,allRecipes,leftovers,toast,setModal}){
+    const days=weekDates(currentWeek);
+    const [dragOver,setDragOver]=useState(null);
+    const dragRef=useRef(null);
+
+    function prevWeek(){const d=new Date(currentWeek);d.setDate(d.getDate()-7);setCurrentWeek(getMonday(d))}
+    function nextWeek(){const d=new Date(currentWeek);d.setDate(d.getDate()+7);setCurrentWeek(getMonday(d))}
+
+    function onDragStart(e,dateK,meal){dragRef.current={dateK,meal};e.dataTransfer.effectAllowed="move";}
+    function onDrop(targetDateK,targetMeal){
+      if(!dragRef.current)return;
+      const{dateK,meal}=dragRef.current;
+      if(dateK===targetDateK&&meal===targetMeal)return;
+      const srcRecipe=plan[dateK]?.[meal];
+      const tgtRecipe=plan[targetDateK]?.[targetMeal];
+      updatePlanDay(dateK,{[meal]:tgtRecipe});
+      updatePlanDay(targetDateK,{[targetMeal]:srcRecipe});
+      toast("🔄 Mahlzeiten getauscht!");
+      dragRef.current=null;
+      setDragOver(null);
+    }
+
+    const weekLabel=`KW ${getISOWeek(currentWeek)} · ${currentWeek.getDate()}. ${MONTHS[currentWeek.getMonth()]}`;
+    const todayKey=dk(new Date());
+
+    return(
+      <div>
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.75rem",flexWrap:"wrap",gap:"8px"}}>
+          <div className="week-nav">
+            <button onClick={prevWeek}>‹</button>
+            <span>{weekLabel}</span>
+            <button onClick={nextWeek}>›</button>
+          </div>
+          <label style={{display:"flex",alignItems:"center",gap:"7px",cursor:"pointer",fontSize:"0.82rem",fontWeight:500,margin:0,background:batchMode?"#d1fae5":"var(--cream2)",padding:"8px 12px",borderRadius:"8px",border:"1px solid "+(batchMode?"#6ee7b7":"var(--cream3)")}}>
+            <input type="checkbox" checked={batchMode} onChange={e=>setBatchMode(e.target.checked)} style={{width:"auto",accentColor:"var(--green)",width:16,height:16}}/>
+            📦 Batch-Cooking
+          </label>
+        </div>
+
+        {leftovers.length>0&&(
+          <div className="leftover-card">
+            <div style={{fontWeight:500,fontSize:"0.85rem",marginBottom:"4px"}}>♻️ Resteverwerter – diese Zutaten nur einmal im Plan:</div>
+            <div style={{display:"flex",gap:"4px",flexWrap:"wrap",marginTop:"4px"}}>
+              {leftovers.map(l=><span key={l} className="tag">↪ {l}</span>)}
+            </div>
+          </div>
+        )}
+
+        <div style={{display:"grid",gridTemplateColumns:"repeat(7,1fr)",gap:"4px",overflowX:"auto"}}>
+          {days.map(d=>{
+            const dateK=dk(d);
+            const day=plan[dateK];
+            const isToday=dateK===todayKey;
+            return(
+              <div key={dateK} className="day-col" style={{border:isToday?"2px solid var(--green)":"1px solid var(--cream3)",minWidth:0}}>
+                <div className="day-header" style={{background:isToday?"var(--green)":"var(--green-dark)"}}>
+                  {DAYS[d.getDay()===0?6:d.getDay()-1]} {d.getDate()}.
+                </div>
+                <div style={{padding:"3px",display:"flex",flexDirection:"column",gap:"3px"}}>
+                  {day?["breakfast","lunch","dinner"].map(m=>{
+                    const recipe=day[m];
+                    const eaten=day.eaten[m];
+                    const mIcon={breakfast:"🌅",lunch:"☀️",dinner:"🌙"}[m];
+                    return(
+                      <div key={m}
+                           className={`meal-card ${eaten?"eaten":""} ${dragOver===dateK+m?"drag-active":""}`}
+                           draggable
+                           onDragStart={e=>onDragStart(e,dateK,m)}
+                           onDragOver={e=>{e.preventDefault();setDragOver(dateK+m)}}
+                           onDragLeave={()=>setDragOver(null)}
+                           onDrop={e=>{e.preventDefault();onDrop(dateK,m)}}
+                           style={{padding:"5px"}}
+                           onClick={()=>recipe&&setModal({dateK,meal:m,recipe,day})}
+                      >
+                        <div style={{fontSize:"0.6rem",color:"var(--text3)",lineHeight:1.2,marginBottom:"2px"}}>{mIcon}</div>
+                        <div style={{fontSize:"0.62rem",fontWeight:500,lineHeight:1.3,color:eaten?"#065f46":"var(--text)"}}>{recipe?.name||"–"}</div>
+                        {recipe&&<div style={{display:"flex",gap:"2px",marginTop:"3px",flexWrap:"wrap"}}>
+                          <span style={{fontSize:"0.55rem",background:"#dbeafe",color:"#1e40af",borderRadius:"3px",padding:"1px 3px"}}>{recipe.macros.carbs}c</span>
+                          <span style={{fontSize:"0.55rem",background:"#fef3c7",color:"#92400e",borderRadius:"3px",padding:"1px 3px"}}>{recipe.macros.fat}f</span>
+                        </div>}
+                        <div style={{display:"flex",gap:"3px",marginTop:"4px",alignItems:"center"}}>
+                          <div onClick={e=>{e.stopPropagation();toggleEaten(dateK,m)}}
+                               className={`check-box ${eaten?"checked":""}`}
+                               style={{width:13,height:13,borderRadius:3,background:eaten?"var(--green)":"white",borderColor:eaten?"var(--green)":"var(--cream3)"}}/>
+                          {batchMode&&recipe&&<button
+                            style={{fontSize:"0.5rem",padding:"1px 3px",background:"#fffbf0",border:"1px solid var(--amber)",color:"var(--amber)",borderRadius:"3px",cursor:"pointer",flex:1}}
+                            onClick={e=>{e.stopPropagation();applyBatch(dateK,m,recipe)}}>Vorkochen</button>}
+                        </div>
+                      </div>
+                    );
+                  }):<div style={{padding:"4px",fontSize:"0.65rem",color:"var(--text3)"}}>–</div>}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── MEAL MODAL ─────────────────────────────────────────────────────────────
+  function MealModal({modal,onClose,allRecipes,updatePlanDay,batchMode,applyBatch,toast}){
+    const{dateK,meal,recipe,day}=modal;
+    const [swapOpen,setSwapOpen]=useState(false);
+    const mLabel={breakfast:"Frühstück",lunch:"Mittagessen",dinner:"Abendessen"}[meal];
+    const sameType=allRecipes.filter(r=>r.type===meal&&r.id!==recipe?.id);
+
+    function swap(newRecipe){
+      updatePlanDay(dateK,{[meal]:newRecipe});
+      toast(`✏️ Ersetzt durch: ${newRecipe.name}`);
+      onClose();
+    }
+
+    return(
+      <div className="modal-overlay" onClick={onClose}>
+        <div className="modal" onClick={e=>e.stopPropagation()}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"1rem"}}>
+            <div>
+              <div style={{fontSize:"0.75rem",color:"var(--text3)",marginBottom:"2px"}}>{mLabel} · {dateK}</div>
+              <h3 style={{fontWeight:400,fontSize:"1.3rem"}}>{recipe?.name}</h3>
+            </div>
+            <button className="btn btn-secondary btn-sm" onClick={onClose}>✕</button>
+          </div>
+          {recipe&&<>
+            <div style={{display:"flex",gap:"5px",flexWrap:"wrap",marginBottom:"1rem"}}>
+              <span className="recipe-macro rm-carb">{recipe.macros.carbs}g Carbs</span>
+              <span className="recipe-macro rm-prot">{recipe.macros.protein}g Protein</span>
+              <span className="recipe-macro rm-fat">{recipe.macros.fat}g Fett</span>
+              <span className="recipe-macro rm-cal">{recipe.macros.kcal} kcal</span>
+              {recipe.prepMin&&<span className="badge badge-blue">⏱ {recipe.prepMin} Min</span>}
+              {recipe.batchDays>1&&<span className="badge badge-green">📦 {recipe.batchDays} Tage</span>}
+            </div>
+            <div className="form-group">
+              <label>Zutaten</label>
+              <ul style={{paddingLeft:"1.2rem",fontSize:"0.85rem",color:"var(--text2)",lineHeight:1.7}}>
+                {recipe.ingredients.map((i,n)=><li key={n}>{i}</li>)}
+              </ul>
+            </div>
+            {recipe.steps&&<div className="form-group">
+              <label>Zubereitung</label>
+              <p style={{fontSize:"0.85rem",color:"var(--text2)",lineHeight:1.6,background:"var(--cream2)",padding:"10px",borderRadius:"8px"}}>{recipe.steps}</p>
+            </div>}
+            {batchMode&&<button className="btn btn-amber" style={{width:"100%",marginBottom:"8px"}} onClick={()=>{applyBatch(dateK,meal,recipe);onClose()}}>📦 Als Vorkochen einplanen ({recipe.batchDays} Tage)</button>}
+          </>}
+          <div style={{borderTop:"1px solid var(--cream2)",paddingTop:"1rem",marginTop:"0.5rem"}}>
+            <button className="btn btn-secondary" style={{width:"100%",marginBottom:"8px"}} onClick={()=>setSwapOpen(!swapOpen)}>🔄 Rezept ersetzen {swapOpen?"▲":"▼"}</button>
+            {swapOpen&&<div style={{maxHeight:"240px",overflowY:"auto",display:"flex",flexDirection:"column",gap:"4px"}}>
+              {sameType.map(r=>(
+                <div key={r.id} onClick={()=>swap(r)} style={{padding:"9px 12px",borderRadius:"8px",cursor:"pointer",border:"1px solid var(--cream3)",background:"white"}}
+                     className="meal-card">
+                  <div style={{fontWeight:500,fontSize:"0.85rem"}}>{r.name}</div>
+                  <div style={{display:"flex",gap:"4px",marginTop:"4px"}}>
+                    <span className="recipe-macro rm-carb">{r.macros.carbs}g C</span>
+                    <span className="recipe-macro rm-prot">{r.macros.protein}g P</span>
+                    <span className="recipe-macro rm-fat">{r.macros.fat}g F</span>
+                  </div>
+                </div>
+              ))}
+            </div>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── SHOPPING ───────────────────────────────────────────────────────────────
+  function ShoppingView({shoppingList,shoppingWeek,setShoppingWeek,leftovers}){
+    const [checked,setChecked]=useState({});
+    const [hideChecked,setHideChecked]=useState(false);
+    const [search,setSearch]=useState("");
+    const [manual,setManual]=useState([]);
+    const [manualInput,setManualInput]=useState("");
+
+    const catMap={
+      Gemüse:["blumenkohl","zucchini","brokkoli","spinat","paprika","auberginen","pilz","champignon","tomaten","pak choi","rucola","gurke"],
+      Eiweiß:["eier","tofu","tempeh","halloumi","mozzarella","parmesan","feta","ricotta","käse","edamame"],
+      Milch:["sahne","frischkäse","milch","butter","joghurt","kokosmilch","ricotta"],
+      Fette:["avocado","olivenöl","sesamöl","tahini","walnüsse","kokosraspeln","chiasamen","mandelmehl"],
+      Gewürze:["salz","pfeffer","cumin","paprikapulver","oregano","thymian","koriander","ingwer","knoblauch","rosmarin","basilikum","muskat","zimt","currypaste","tamari","zitrone","limette","sesam"],
+    };
+
+    const allItems=[...shoppingList,...manual.map(m=>[m,1])];
+    const filtered=allItems.filter(([k])=>k.toLowerCase().includes(search.toLowerCase()));
+    const categories={Gemüse:[],Eiweiß:[],Milch:[],Fette:[],Gewürze:[],Sonstiges:[]};
+    filtered.forEach(([k,n])=>{
+      if(hideChecked&&checked[k])return;
+      let found=false;
+      for(const[cat,words]of Object.entries(catMap)){
+        if(words.some(w=>k.toLowerCase().includes(w))){categories[cat].push([k,n]);found=true;break}
+      }
+      if(!found)categories.Sonstiges.push([k,n]);
+    });
+
+    const total=filtered.length;
+    const doneCount=Object.values(checked).filter(Boolean).length;
+
+    function addManual(){
+      const v=manualInput.trim();
+      if(!v)return;
+      setManual(m=>[...m,v]);
+      setManualInput("");
+    }
+
+    return(
+      <div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1rem",flexWrap:"wrap",gap:"8px"}}>
+          <h2 style={{fontWeight:400}}>🛒 Einkaufsliste</h2>
+          <div style={{display:"flex",gap:"5px",alignItems:"center"}}>
+            <button className="btn btn-secondary btn-sm" onClick={()=>{const d=new Date(shoppingWeek);d.setDate(d.getDate()-7);setShoppingWeek(getMonday(d))}}>‹</button>
+            <span style={{fontSize:"0.82rem",padding:"0 8px"}}>KW {getISOWeek(shoppingWeek)}</span>
+            <button className="btn btn-secondary btn-sm" onClick={()=>{const d=new Date(shoppingWeek);d.setDate(d.getDate()+7);setShoppingWeek(getMonday(d))}}>›</button>
+          </div>
+        </div>
+
+        {/* Manuell hinzufügen */}
+        <div className="card" style={{marginBottom:"0.75rem"}}>
+          <div style={{display:"flex",gap:"8px"}}>
+            <input placeholder="Eigenes Produkt hinzufügen…" value={manualInput} onChange={e=>setManualInput(e.target.value)}
+                   onKeyDown={e=>e.key==="Enter"&&addManual()} style={{flex:1}}/>
+            <button className="btn btn-primary btn-sm" onClick={addManual}>+ Hinzufügen</button>
+          </div>
+        </div>
+
+        <div style={{display:"flex",gap:"8px",marginBottom:"1rem",alignItems:"center",flexWrap:"wrap"}}>
+          <input placeholder="Suche Zutat…" value={search} onChange={e=>setSearch(e.target.value)} style={{maxWidth:220}}/>
+          <span className="badge badge-green">{doneCount}/{total} erledigt</span>
+          <button className="btn btn-secondary btn-sm" onClick={()=>setHideChecked(h=>!h)}>{hideChecked?"Alle zeigen":"Erledigte ausblenden"}</button>
+          <button className="btn btn-secondary btn-sm" onClick={()=>setChecked({})}>Reset</button>
+        </div>
+
+        {leftovers.length>0&&(
+          <div className="leftover-card" style={{marginBottom:"1rem"}}>
+            <div style={{fontWeight:500,fontSize:"0.84rem"}}>♻️ Diese Reste nutzen – nicht extra kaufen:</div>
+            <div style={{display:"flex",gap:"4px",flexWrap:"wrap",marginTop:"5px"}}>
+              {leftovers.map(l=><span key={l} className="tag">✓ {l}</span>)}
+            </div>
+          </div>
+        )}
+
+        <div className="grid-2">
+          {Object.entries(categories).filter(([,items])=>items.length>0).map(([cat,items])=>(
+            <div key={cat} className="card">
+              <div style={{fontWeight:600,fontSize:"0.78rem",color:"var(--text3)",marginBottom:"8px",textTransform:"uppercase",letterSpacing:"0.07em"}}>{cat}</div>
+              {items.map(([k,n])=>(
+                <div key={k} className="shopping-item" style={{opacity:checked[k]?0.45:1}}>
+                  <div className={`check-box ${checked[k]?"checked":""}`} onClick={()=>setChecked(c=>({...c,[k]:!c[k]}))}/>
+                  <span style={{flex:1,fontSize:"0.85rem",textDecoration:checked[k]?"line-through":"none"}}>{k}</span>
+                  {n>1&&<span className="badge badge-blue" style={{fontSize:"0.68rem"}}>×{n}</span>}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // ─── HEALTH ─────────────────────────────────────────────────────────────────
+  function HealthView({electrolytes,toggleElectrolyte}){
+    const today=new Date();
+    const todayKey=dk(today);
+    const weekD=Array.from({length:7},(_,i)=>{const d=new Date(today);d.setDate(d.getDate()-6+i);return{date:d,k:dk(d),label:DAYS[d.getDay()===0?6:d.getDay()-1]};});
+
+    const supps=[
+      {key:"b12",name:"Vitamin B12",icon:"💊",critical:true,detail:"Kritisch bei vegetarischer Ernährung. 500–1000 µg täglich oder 2000 µg wöchentlich. Methylcobalamin bevorzugen.",color:"#fee2e2"},
+      {key:"d3",name:"Vitamin D3 + K2",icon:"☀️",critical:true,detail:"D3 1000–4000 IE täglich + K2 100 µg. Wichtig für Knochenstoffwechsel und Immunsystem.",color:"#fef3c7"},
+      {key:"omega3",name:"Omega-3 (EPA/DHA)",icon:"🐟",critical:true,detail:"Algenöl-basiertes Omega-3 (vegan-freundlich). 250–500 mg EPA+DHA täglich für Gehirn & Herz.",color:"#dbeafe"},
+      {key:"iron",name:"Eisen",icon:"⚡",critical:false,detail:"Nicht-Häm-Eisen schlechter bioverfügbar. Mit Vitamin C zusammen einnehmen. Blutwerte regelmäßig checken.",color:"#ede9fe"},
+      {key:"zinc",name:"Zink",icon:"🛡",critical:false,detail:"10–15 mg täglich. Wichtig für Immunsystem & Hormone. Getrennt von Kaffee/Tee einnehmen.",color:"#d1fae5"},
+      {key:"mag",name:"Magnesium",icon:"🔋",critical:false,detail:"300–400 mg täglich. Besonders bei Keto wichtig – wird vermehrt ausgeschieden. Glycinat gut verträglich.",color:"#fce7f3"},
+    ];
+
+    return(
+      <div>
+        <h2 style={{marginBottom:"1.5rem",fontWeight:400}}>🩺 Gesundheits-Guide</h2>
+
+        <div className="card">
+          <h3 style={{marginBottom:"1rem",fontWeight:400}}>⚠️ Kritische Nährstoffe – Vegetarisch-Keto</h3>
+          {supps.map(s=>(
+            <div key={s.key} style={{borderLeft:`4px solid ${s.critical?"#ef4444":"#f59e0b"}`,background:s.color,borderRadius:"0 var(--radius) var(--radius) 0",padding:"0.75rem 1rem",marginBottom:"0.5rem"}}>
+              <div style={{display:"flex",alignItems:"center",gap:"8px",marginBottom:"4px"}}>
+                <span>{s.icon}</span>
+                <span style={{fontWeight:600,fontSize:"0.88rem"}}>{s.name}</span>
+                {s.critical&&<span className="badge badge-red">Kritisch</span>}
+              </div>
+              <p style={{fontSize:"0.8rem",color:"var(--text2)",lineHeight:1.55}}>{s.detail}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="card">
+          <h3 style={{marginBottom:"0.4rem",fontWeight:400}}>💧 Elektrolyt-Wochenübersicht</h3>
+          <p style={{fontSize:"0.8rem",color:"var(--text3)",marginBottom:"1rem"}}>Keto-Grippe entsteht durch Elektrolytmangel – täglich checken!</p>
+          <div style={{overflowX:"auto"}}>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:"0.82rem",minWidth:"380px"}}>
+              <thead><tr>
+                <th style={{textAlign:"left",padding:"6px 4px",fontWeight:500,color:"var(--text3)"}}>Tag</th>
+                {weekD.map(w=><th key={w.k} style={{padding:"6px 4px",textAlign:"center",fontWeight:500,color:w.k===todayKey?"var(--green)":"var(--text3)"}}>{w.label}</th>)}
+              </tr></thead>
+              <tbody>
+              {[["🔋 Mg","mg"],["🍌 K","k"],["🧂 Na","salt"]].map(([label,field])=>(
+                <tr key={field}>
+                  <td style={{padding:"6px 4px",fontWeight:500,fontSize:"0.8rem"}}>{label}</td>
+                  {weekD.map(w=>{
+                    const done=electrolytes[w.k+"_"+field]||false;
+                    return(
+                      <td key={w.k} style={{padding:"6px 4px",textAlign:"center"}}>
+                        <div className={`check-box ${done?"checked":""}`} style={{margin:"0 auto",cursor:w.k===todayKey?"pointer":"default",opacity:w.k===todayKey?1:0.7}}
+                             onClick={()=>w.k===todayKey&&toggleElectrolyte(w.k,field)}/>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div className="card" style={{background:"var(--cream2)"}}>
+          <h3 style={{marginBottom:"1rem",fontWeight:400}}>📊 Ketose-Grundlagen</h3>
+          <div className="grid-2">
+            {[
+              {t:"Net-Carbs Limit",v:"20–30g täglich",desc:"Bruttocarbs minus Ballaststoffe = Net Carbs"},
+              {t:"Proteinzufuhr",v:"1,4g/kg KG",desc:"Moderat – zu viel kann Ketose hemmen (Gluconeogenese)"},
+              {t:"Fett als Hauptenergie",v:"~65–75%",desc:"MCT-Öl, Kokosöl, Avocado, Olivenöl bevorzugen"},
+              {t:"Ketose-Einlaufzeit",v:"2–7 Tage",desc:"In dieser Phase Keto-Grippe-Symptome möglich"},
+            ].map(i=>(
+              <div key={i.t} style={{background:"white",borderRadius:"10px",padding:"0.85rem"}}>
+                <div style={{fontSize:"0.7rem",color:"var(--text3)"}}>{i.t}</div>
+                <div style={{fontWeight:600,color:"var(--green)",fontSize:"0.95rem",margin:"3px 0"}}>{i.v}</div>
+                <div style={{fontSize:"0.74rem",color:"var(--text2)"}}>{i.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── RECIPES ────────────────────────────────────────────────────────────────
+  function RecipesView({customRecipes,allRecipes,addCustomRecipe,deleteCustomRecipe,toast}){
+    const [filter,setFilter]=useState("all");
+    const [editingRecipe,setEditingRecipe]=useState(null);
+    const [showForm,setShowForm]=useState(false);
+    const emptyForm={name:"",type:"breakfast",prepMin:15,kcal:"",carbs:"",protein:"",fat:"",ingredients:"",steps:"",batchDays:1};
+    const [form,setForm]=useState(emptyForm);
+
+    function openNew(){setForm(emptyForm);setEditingRecipe(null);setShowForm(true)}
+    function openEdit(r){
+      setForm({name:r.name,type:r.type,prepMin:r.prepMin||15,kcal:r.macros.kcal,carbs:r.macros.carbs,protein:r.macros.protein,fat:r.macros.fat,ingredients:(r.ingredients||[]).join("\n"),steps:r.steps||"",batchDays:r.batchDays||1});
+      setEditingRecipe(r);
+      setShowForm(true);
+    }
+
+    async function save(){
+      if(!form.name||!form.kcal){toast("⚠️ Name & Kalorien sind Pflichtfelder");return}
+      const nr={
+        name:form.name,type:form.type,prepMin:parseInt(form.prepMin)||15,
+        macros:{kcal:parseInt(form.kcal)||0,carbs:parseInt(form.carbs)||0,protein:parseInt(form.protein)||0,fat:parseInt(form.fat)||0},
+        ingredients:form.ingredients.split("\n").filter(Boolean),
+        steps:form.steps,tags:["eigenes"],batchDays:parseInt(form.batchDays)||1,
+      };
+      if(editingRecipe){
+        await deleteCustomRecipe(editingRecipe);
+        await addCustomRecipe(nr);
+        toast("✏️ Rezept aktualisiert!");
+      }else{
+        await addCustomRecipe(nr);
+      }
+      setShowForm(false);setEditingRecipe(null);setForm(emptyForm);
+    }
+
+    const filtered=allRecipes.filter(r=>filter==="all"||r.type===filter);
+
+    return(
+      <div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"1rem",gap:"8px",flexWrap:"wrap"}}>
+          <h2 style={{fontWeight:400}}>📖 Rezept-Bibliothek</h2>
+          <button className="btn btn-primary" onClick={openNew}>+ Eigenes Rezept</button>
+        </div>
+
+        {showForm&&(
+          <div className="card" style={{border:"2px solid var(--green-light)",marginBottom:"1rem"}}>
+            <h3 style={{marginBottom:"1rem",fontWeight:400}}>{editingRecipe?"Rezept bearbeiten":"Neues Rezept"}</h3>
+            <div className="grid-2">
+              <div className="form-group"><label>Name *</label><input value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="z.B. Avocado-Bowl"/></div>
+              <div className="form-group"><label>Typ</label>
+                <select value={form.type} onChange={e=>setForm(f=>({...f,type:e.target.value}))}>
+                  <option value="breakfast">Frühstück</option><option value="lunch">Mittagessen</option><option value="dinner">Abendessen</option>
+                </select>
+              </div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"8px"}}>
+              {[["Kalorien *","kcal","kcal"],["Carbs (g)","carbs","g"],["Protein (g)","protein","g"],["Fett (g)","fat","g"],["Batch-Tage","batchDays","d"]].map(([l,k,u])=>(
+                <div key={k} className="form-group"><label>{l}</label><input type="number" value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} placeholder={u}/></div>
+              ))}
+            </div>
+            <div className="form-group"><label>Zutaten (eine pro Zeile)</label><textarea rows={4} value={form.ingredients} onChange={e=>setForm(f=>({...f,ingredients:e.target.value}))} placeholder={"1 Avocado\n2 Eier\n30g Feta"}/></div>
+            <div className="form-group"><label>Zubereitung</label><textarea rows={3} value={form.steps} onChange={e=>setForm(f=>({...f,steps:e.target.value}))} placeholder="Beschreibe die Zubereitung…"/></div>
+            <div style={{display:"flex",gap:"8px"}}>
+              <button className="btn btn-primary" onClick={save}>{editingRecipe?"Speichern":"Rezept hinzufügen"}</button>
+              <button className="btn btn-secondary" onClick={()=>{setShowForm(false);setEditingRecipe(null)}}>Abbrechen</button>
+            </div>
+          </div>
+        )}
+
+        <div className="tabs">
+          {[["all","Alle"],["breakfast","Frühstück"],["lunch","Mittag"],["dinner","Abendessen"]].map(([k,l])=>(
+            <button key={k} className={`tab ${filter===k?"active":""}`} onClick={()=>setFilter(k)}>{l}</button>
+          ))}
+        </div>
+
+        <div className="grid-3">
+          {filtered.map(r=>(
+            <div key={r.id} className="card" style={{position:"relative",cursor:"pointer"}} onClick={()=>r.custom&&openEdit(r)}>
+              {r.custom&&<span className="badge badge-amber" style={{position:"absolute",top:"12px",right:"12px"}}>Eigenes</span>}
+              <div style={{fontWeight:500,fontSize:"0.9rem",marginBottom:"4px",paddingRight:r.custom?60:0}}>{r.name}</div>
+              <div style={{display:"flex",gap:"3px",flexWrap:"wrap",marginBottom:"7px"}}>
+                {r.tags?.map(t=><span key={t} className="tag">{t}</span>)}
+              </div>
+              <div style={{display:"flex",gap:"3px",flexWrap:"wrap",marginBottom:"7px"}}>
+                <span className="recipe-macro rm-carb">{r.macros.carbs}g C</span>
+                <span className="recipe-macro rm-prot">{r.macros.protein}g P</span>
+                <span className="recipe-macro rm-fat">{r.macros.fat}g F</span>
+                <span className="recipe-macro rm-cal">{r.macros.kcal} kcal</span>
+                {r.prepMin&&<span className="badge badge-blue">⏱ {r.prepMin}min</span>}
+              </div>
+              <div style={{fontSize:"0.77rem",color:"var(--text3)",marginBottom:r.custom?"8px":"0"}}>
+                {r.ingredients?.slice(0,3).join(", ")}{r.ingredients?.length>3?` +${r.ingredients.length-3} mehr`:""}
+              </div>
+              {r.custom&&(
+                <div style={{display:"flex",gap:"6px"}}>
+                  <button className="btn btn-secondary btn-sm" onClick={e=>{e.stopPropagation();openEdit(r)}}>✏️ Bearbeiten</button>
+                  <button className="btn btn-danger btn-sm" onClick={e=>{e.stopPropagation();deleteCustomRecipe(r)}}>Löschen</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  ReactDOM.render(<App/>,document.getElementById("root"));
+</script>
+<script>
+  if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+  const manifest={name:"VegeKeto – Ernährungsplan",short_name:"VegeKeto",start_url:".",display:"standalone",background_color:"#f5f0e8",theme_color:"#2d4a3e",icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%232d4a3e'/><text y='140' font-size='120' text-anchor='middle' x='96'>🥗</text></svg>",sizes:"192x192",type:"image/svg+xml"}]};
+  const blob=new Blob([JSON.stringify(manifest)],{type:"application/json"});
+  const lnk=document.createElement("link");lnk.rel="manifest";lnk.href=URL.createObjectURL(blob);document.head.appendChild(lnk);
+</script>
+</body>
+</html>

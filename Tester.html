@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#2d4a3e"/>
+  <meta name="description" content="VegeFit 2026 – Muskelaufbau & PCOS-Balance"/>
+  <title>VegeFit – Dein Plan</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    // Deine echten Daten wurden hier integriert
+    const SUPABASE_URL = 'https://smzvvpvnbqbeafgboasj.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtenZ2cHZuYnFiZWFmZ2JvYXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NjUzNTQsImV4cCI6MjA5MTI0MTM1NH0.y6pnzwDlfFrlSco4Pohuz6eTvxx7du3UYR_NdO-EXao';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const USER_ID = 'mein_planer_2026'; // Neue ID für den sauberen Neustart
+  </script>
+
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+
+  <style>
+    /* Global Styles & Mobile Optimization */
+    *{box-sizing:border-box;margin:0;padding:0;touch-action:manipulation}
+    :root{
+      --green-dark:#1a3028;--green-mid:#2d4a3e;--green:#3d6b58;--green-light:#5a8f77;
+      --cream:#f5f0e8;--cream2:#ede8dc;--cream3:#e0d9cc;
+      --amber:#c8853a;--amber-light:#e8a85a;--red:#c04444;--blue:#3a6b8a;
+      --text:#1a2420;--text2:#3d5048;--text3:#6b7d74;
+      --radius:12px;--radius-lg:18px;
+      --bottom-nav-h:65px;
+    }
+    body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh;padding-bottom:var(--bottom-nav-h);-webkit-tap-highlight-color:transparent}
+    h1,h2,h3{font-family:'DM Serif Display',serif}
+
+    .app-header{background:var(--green-dark);color:var(--cream);padding:0 1.2rem;display:flex;align-items:center;height:60px;position:sticky;top:0;z-index:100;box-shadow:0 2px 15px rgba(0,0,0,0.2)}
+
+    .main{max-width:900px;margin:0 auto;padding:1.2rem}
+    .card{background:white;border-radius:var(--radius-lg);padding:1.25rem;border:1px solid var(--cream3);margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.03)}
+
+    /* Mobile Bottom Nav */
+    .bottom-nav{position:fixed;bottom:0;left:0;right:0;height:var(--bottom-nav-h);background:var(--green-dark);display:flex;z-index:1000}
+    .bottom-nav button{flex:1;background:none;border:none;color:rgba(245,240,232,0.5);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:0.65rem;gap:4px;cursor:pointer}
+    .bottom-nav button.active{color:var(--amber-light)}
+    .nav-icon{font-size:1.3rem}
+
+    /* Progress & Badges */
+    .progress-bar{height:10px;background:var(--cream2);border-radius:5px;overflow:hidden;margin:6px 0}
+    .progress-fill{height:100%;transition:width 0.5s ease}
+    .meal-card{border:1px solid var(--cream3);border-radius:var(--radius);padding:0.8rem;margin-bottom:0.6rem;background:white;cursor:pointer}
+    .meal-card.eaten{border-color:#10b981;background:#f0fdf4}
+    .badge-pcos{background:#fdf2f8;color:#be185d;border:1px solid #fbcfe8;font-size:0.65rem;padding:2px 6px;border-radius:10px}
+
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+    @media(max-width:600px){.grid-2{grid-template-columns:1fr}}
+
+    input, textarea, select { width:100%; padding:10px; border-radius:8px; border:1px solid var(--cream3); margin-top:5px; font-family: inherit; }
+    .btn{padding:10px 20px; border:none; border-radius:8px; cursor:pointer; font-weight:600; font-family:inherit;}
+    .btn-primary{background:var(--green); color:white;}
+    .btn-danger{background:var(--red); color:white; font-size: 0.75rem; padding: 5px 10px;}
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+  const {useState, useEffect, useMemo, useCallback} = React;
+
+  // ─── ERNÄHRUNGS-KONZEPT (Low-GI & Muskelaufbau) ───
+  const MY_GOAL = { weight: 85, height: 190, age: 35 };
+
+  function calcMacros(p) {
+    const bmr = 88.36 + (13.4 * p.weight) + (4.8 * p.height) - (5.7 * p.age);
+    const tdee = Math.round(bmr * 1.55) + 350; // Fokus Muskelaufbau
+    const protein = Math.round(p.weight * 1.7); // 1.7g/kg
+    const carbs = Math.round((tdee * 0.35) / 4); // 35% Carbs (Low-GI)
+    const fat = Math.round((tdee - (protein * 4) - (carbs * 4)) / 9);
+    return { kcal: tdee, protein, carbs, fat };
+  }
+
+  const NEW_RECIPES = [
+    {id:"f1",name:"Beeren-Quark mit Chiasamen",type:"breakfast",macros:{kcal:420,carbs:35,protein:40,fat:12},ingredients:["250g Magerquark","100g Heidelbeeren","2 EL Chiasamen","Zimt"],steps:"Quark mit Beeren mischen. Zimt hilft bei PCOS (Blutzucker).",tags:["PCOS-Safe","Protein"]},
+    {id:"f2",name:"Vollkorn-Omelett",type:"breakfast",macros:{kcal:450,carbs:25,protein:35,fat:22},ingredients:["3 Eier","1 Scheibe Vollkornbrot","Blattspinat","Feta"],steps:"Omelett mit Spinat füllen, zum Brot servieren.",tags:["PCOS-Safe"]},
+    {id:"m1",name:"Linsen-Bolo (Vollkorn)",type:"lunch",macros:{kcal:650,carbs:70,protein:30,fat:18},ingredients:["80g Vollkornpasta","100g Rote Linsen","Passata","Möhre"],steps:"Linsensoße zu Vollkornpasta servieren (Low-GI).",tags:["PCOS-Safe","Muskel-Fuel"]},
+    {id:"m2",name:"Quinoa-Bowl mit Tofu",type:"lunch",macros:{kcal:620,carbs:60,protein:32,fat:25},ingredients:["70g Quinoa","150g Räuchertofu","Brokkoli","Tahini"],steps:"Quinoa kochen, Tofu kross braten.",tags:["PCOS-Safe","High-Protein"]},
+    {id:"a1",name:"Ofen-Tempeh & Spargel",type:"dinner",macros:{kcal:550,carbs:15,protein:45,fat:30},ingredients:["200g Tempeh","1 Bund Spargel","Olivenöl","Zitrone"],steps:"Im Ofen 20 Min bei 200°C rösten.",tags:["PCOS-Safe","Low-GI"]},
+    {id:"a2",name:"Kichererbsen-Salat",type:"dinner",macros:{kcal:520,carbs:30,protein:25,fat:32},ingredients:["1 Dose Kichererbsen","Gurke","Tomate","100g Feta"],steps:"Alles würfeln und vermengen.",tags:["PCOS-Safe"]}
+  ];
+
+  function buildPlan() {
+    const plan = {};
+    const start = new Date(2026, 3, 13); // 13. April 2026
+    const bf = NEW_RECIPES.filter(r=>r.type==="breakfast");
+    const lu = NEW_RECIPES.filter(r=>r.type==="lunch");
+    const di = NEW_RECIPES.filter(r=>r.type==="dinner");
+
+    for(let i=0; i<43; i++) {
+      const d = new Date(start); d.setDate(d.getDate() + i);
+      const k = d.toISOString().slice(0,10);
+      plan[k] = {
+        breakfast: bf[i % bf.length], lunch: lu[i % lu.length], dinner: di[i % di.length],
+        eaten: { breakfast: false, lunch: false, dinner: false }
+      };
+    }
+    return plan;
+  }
+
+  // ─── APP ───
+  function App() {
+    const [tab, setTab] = useState("dashboard");
+    const [plan, setPlan] = useState(buildPlan());
+    const [customRecipes, setCustomRecipes] = useState([]);
+    const [snack, setSnack] = useState(null);
+    const [editing, setEditing] = useState(null);
+    const macros = useMemo(() => calcMacros(MY_GOAL), []);
+    const todayK = new Date().toISOString().slice(0,10);
+
+    // Load from Supabase
+    useEffect(() => {
+      const load = async () => {
+        const { data } = await sb.from('calendar_days').select('*').eq('user_id', USER_ID);
+        if (data) {
+          const np = {...buildPlan()};
+          data.forEach(r => { if(np[r.date_key]) np[r.date_key].eaten = r.eaten_a; });
+          setPlan(np);
+        }
+        const { data: cData } = await sb.from('custom_recipes').select('*').eq('user_id', USER_ID);
+        if (cData) setCustomRecipes(cData.map(r => ({...r.recipe_data, sb_id: r.id})));
+      };
+      load();
+    }, []);
+
+    const save = async (p) => {
+      if(!p[todayK]) return;
+      await sb.from('calendar_days').upsert({
+        user_id: USER_ID, date_key: todayK, eaten_a: p[todayK].eaten
+      }, { onConflict: 'user_id, date_key' });
+    };
+
+    const toggle = (m) => {
+      const np = {...plan};
+      np[todayK].eaten[m] = !np[todayK].eaten[m];
+      setPlan(np);
+      save(np);
+      setSnack("Häkchen gespeichert! ✓");
+    };
+
+    return (
+      <div>
+        <header className="app-header"><h1>VegeFit 2026</h1></header>
+
+        <div className="main">
+          {tab === "dashboard" && <Dashboard macros={macros} plan={plan} todayK={todayK} toggle={toggle} />}
+          {tab === "calendar" && <div className="card"><h3>KW 16 - KW 21</h3><p>Dein Plan läuft vom 13.04. bis 25.05.2026.</p></div>}
+          {tab === "health" && <HealthInfo />}
+          {tab === "recipes" && <Recipes custom={customRecipes} setCustom={setCustomRecipes} setEditing={setEditing} />}
+        </div>
+
+        <nav className="bottom-nav">
+          <button className={tab==="dashboard"?"active":""} onClick={()=>setTab("dashboard")}><span className="nav-icon">🏠</span>Start</button>
+          <button className={tab==="calendar"?"active":""} onClick={()=>setTab("calendar")}><span className="nav-icon">📅</span>Plan</button>
+          <button className={tab==="recipes"?"active":""} onClick={()=>setTab("recipes")}><span className="nav-icon">📖</span>Rezepte</button>
+          <button className={tab==="health"?"active":""} onClick={()=>setTab("health")}><span className="nav-icon">🩺</span>Info</button>
+        </nav>
+
+        {snack && <div className="snack" style={{position:'fixed', bottom:'80px', left:'50%', transform:'translateX(-50%)', background:'var(--green-dark)', color:'white', padding:'10px 20px', borderRadius:'20px', z-index:2000}}>{snack}</div>}
+        {editing && <EditModal recipe={editing} setEditing={setEditing} setCustom={setCustomRecipes} />}
+      </div>
+    );
+  }
+
+  function Dashboard({macros, plan, todayK, toggle}) {
+    const day = plan[todayK] || { eaten: {} };
+    return (
+      <div>
+        <div className="card">
+          <h3>Tagesziele (Aufbau)</h3>
+          <ProgressBar label="Kalorien" value={2100} max={macros.kcal} unit=" kcal" color="var(--green)" />
+          <ProgressBar label="Protein" value={110} max={macros.protein} color="var(--amber)" />
+        </div>
+        <h3 style={{margin:"1rem 0"}}>Heutige Mahlzeiten</h3>
+        {["breakfast", "lunch", "dinner"].map(m => (
+          <div key={m} className={`meal-card ${day.eaten[m]?"eaten":""}`} onClick={()=>toggle(m)}>
+            <div style={{display:"flex", justifyContent:"space-between"}}>
+              <strong>{day[m]?.name}</strong>
+              <span className="badge-pcos">PCOS-Safe</span>
+            </div>
+            <div style={{fontSize:"0.75rem", marginTop:"5px"}}>
+              <span className="rm-prot">{day[m]?.macros.protein}g P</span> | <span className="rm-carb">{day[m]?.macros.carbs}g C (Low-GI)</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function Recipes({custom, setCustom, setEditing}) {
+    const del = async (id, sb_id) => {
+      await sb.from('custom_recipes').delete().eq('id', sb_id);
+      setCustom(prev => prev.filter(r => r.sb_id !== sb_id));
+    };
+    return (
+      <div>
+        <button className="btn btn-primary" style={{width:'100%', marginBottom:'1rem'}}>+ Eigenes Rezept</button>
+        {NEW_RECIPES.map(r => (
+          <div key={r.id} className="meal-card"><strong>{r.name}</strong><br/><span className="badge-pcos">PCOS-Safe (Standard)</span></div>
+        ))}
+        {custom.map(r => (
+          <div key={r.sb_id} className="meal-card" style={{borderColor:'var(--amber)'}}>
+            <div style={{display:'flex', justifyContent:'space-between'}}>
+              <strong onClick={()=>setEditing(r)}>{r.name}</strong>
+              <button className="btn-danger" onClick={()=>del(r.id, r.sb_id)}>Löschen</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  function EditModal({recipe, setEditing, setCustom}) {
+    const [form, setForm] = useState({...recipe});
+    const save = async () => {
+      await sb.from('custom_recipes').update({recipe_data: form}).eq('id', recipe.sb_id);
+      setCustom(prev => prev.map(r => r.sb_id === recipe.sb_id ? form : r));
+      setEditing(null);
+    };
+    return (
+      <div className="card" style={{position:'fixed', inset:'20px', zIndex:2000, overflowY:'auto'}}>
+        <h3>Rezept bearbeiten</h3>
+        <label>Name</label><input value={form.name} onChange={e=>setForm({...form, name:e.target.value})} />
+        <label>Zutaten</label><textarea rows="5" value={form.ingredients.join('\n')} onChange={e=>setForm({...form, ingredients:e.target.value.split('\n')})} />
+        <div style={{display:'flex', gap:'10px', marginTop:'1rem'}}>
+          <button className="btn btn-primary" onClick={save}>Speichern</button>
+          <button className="btn btn-secondary" onClick={()=>setEditing(null)}>Abbrechen</button>
+        </div>
+      </div>
+    );
+  }
+
+  function HealthInfo() {
+    return (
+      <div>
+        <div className="card" style={{borderLeft:"5px solid var(--blue)"}}>
+          <h3>🚀 Erholung & Aufbau</h3>
+          <p style={{fontSize:"0.85rem", marginTop:"5px"}}>Nach deiner Krankheit ist Protein (1.7g/kg) entscheidend für die Regeneration der Muskulatur.</p>
+        </div>
+        <div className="card" style={{borderLeft:"5px solid #be185d"}}>
+          <h3>🌸 PCOS-Support</h3>
+          <p style={{fontSize:"0.85rem", marginTop:"5px"}}>Wir nutzen Low-GI Kohlenhydrate, um den Insulinspiegel flach zu halten – das hilft deiner Freundin automatisch.</p>
+        </div>
+      </div>
+    );
+  }
+
+  function ProgressBar({value, max, label, unit="g", color}) {
+    const pct = Math.min(100, (value/max)*100);
+    return (
+      <div style={{marginBottom:'10px'}}>
+        <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.75rem'}}><span>{label}</span><span>{value}/{max}{unit}</span></div>
+        <div className="progress-bar"><div className="progress-fill" style={{width:pct+'%', background:color}}></div></div>
+      </div>
+    );
+  }
+
+  ReactDOM.render(<App />, document.getElementById("root"));
+</script>
+</body>
+</html>
