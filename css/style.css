@@ -1,247 +1,356 @@
-/*! HTML5 Boilerplate v9.0.1 | MIT License | https://html5boilerplate.com/ */
+/* ══════════════════════════════════════════════════════════════
+   VegeProtein – Stylesheet
+   Alle CSS-Variablen, Layout, Komponenten, Sport-spezifisch
+   ══════════════════════════════════════════════════════════════ */
 
-/* main.css 3.0.0 | MIT License | https://github.com/h5bp/main.css#readme */
-/*
- * What follows is the result of much research on cross-browser styling.
- * Credit left inline and big thanks to Nicolas Gallagher, Jonathan Neal,
- * Kroc Camen, and the H5BP dev community and team.
- */
+/* ── RESET & CSS-VARIABLEN ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ==========================================================================
-   Base styles: opinionated defaults
-   ========================================================================== */
-
-html {
-  color: #222;
-  font-size: 1em;
-  line-height: 1.4;
+:root {
+  --navy:     #1a2d4a;  --navy-mid: #2d4a6e;  --navy-l:   #3d6490;
+  --teal:     #2a7a6e;  --teal-l:   #3d9e8e;  --teal-p:   #e0f4f1;
+  --cream:    #f4f1ec;  --cream2:   #ece8e0;  --cream3:   #ddd8ce;
+  --amber:    #c88030;  --amber-l:  #e8a048;
+  --green:    #3a7a4a;  --green-l:  #52a066;  --green-p:  #e4f4e8;
+  --purple:   #6a4a8a;  --purple-p: #f0ebf8;
+  --coral:    #c8523a;  --coral-l:  #e87060;  --coral-p:  #fce7e2;
+  --red:      #b91c1c;
+  --sport:    #1a4a7a;  --sport-l:  #2a6aaa;  --sport-p:  #e0ecf8;
+  --txt:      #1a2420;  --txt2:     #38504a;  --txt3:     #6a7d78;
+  --r:        12px;
+  --rl:       18px;
+  --nh:       60px;   /* header height */
+  --bnh:      68px;   /* bottom nav height */
+  --sbi:      env(safe-area-inset-bottom, 0px);
 }
 
-/*
- * Remove text-shadow in selection highlight:
- * https://twitter.com/miketaylr/status/12228805301
- *
- * Customize the background color to match your design.
- */
+/* ── BASE ── */
+html, body { height: 100%; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--cream);
+  color: var(--txt);
+  min-height: 100vh;
+  overflow-x: hidden;
+  padding-bottom: calc(var(--bnh) + var(--sbi));
+}
+@media (min-width: 641px) { body { padding-bottom: 0; } }
+h1, h2, h3, h4 { font-family: 'DM Serif Display', serif; }
 
-::-moz-selection {
-  background: #b3d4fc;
-  text-shadow: none;
+/* ── HEADER ── */
+.app-header {
+  background: var(--navy);
+  padding: 0 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--nh);
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 2px 20px rgba(0,0,0,.32);
+}
+.logo-wrap { display: flex; align-items: center; gap: 9px; }
+.logo-dot {
+  width: 28px; height: 28px;
+  background: var(--teal-l);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: .9rem; flex-shrink: 0;
+}
+.app-header h1   { font-size: 1.15rem; font-weight: 400; color: var(--cream); line-height: 1; }
+.app-header .tagline {
+  font-size: .6rem; color: rgba(244,241,236,.48);
+  font-family: 'DM Sans', sans-serif; letter-spacing: .03em;
 }
 
-::selection {
-  background: #b3d4fc;
-  text-shadow: none;
+/* Desktop-Navigation */
+.desktop-nav { display: flex; gap: 2px; }
+.desktop-nav button {
+  background: none; border: none;
+  color: rgba(244,241,236,.6);
+  padding: 10px 11px; cursor: pointer; border-radius: 8px;
+  font-size: .76rem; font-family: 'DM Sans', sans-serif; font-weight: 500;
+  transition: all .15s; white-space: nowrap; min-height: 44px;
+}
+.desktop-nav button.active,
+.desktop-nav button:hover { color: var(--cream); background: rgba(244,241,236,.13); }
+
+/* ── BOTTOM NAV (Mobile) ── */
+.bottom-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0;
+  z-index: 200;
+  background: var(--navy);
+  box-shadow: 0 -2px 16px rgba(0,0,0,.28);
+  padding-bottom: var(--sbi);
+}
+.bottom-nav-inner { display: flex; height: var(--bnh); }
+.bottom-nav button {
+  flex: 1; background: none; border: none;
+  color: rgba(244,241,236,.48);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 2px;
+  font-size: .57rem; font-family: 'DM Sans', sans-serif; font-weight: 500;
+  cursor: pointer; padding: 4px 1px; transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation; min-width: 44px;
+}
+.bottom-nav button .nav-icon { font-size: 1.15rem; line-height: 1; transition: transform .15s; }
+.bottom-nav button.active            { color: var(--teal-l); }
+.bottom-nav button.active .nav-icon  { transform: translateY(-2px); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 640px) {
+  .desktop-nav { display: none; }
+  .bottom-nav  { display: block; }
+  .main        { padding: .9rem .75rem; }
+  .g2, .g3     { grid-template-columns: 1fr; }
+  .g2m         { grid-template-columns: 1fr 1fr !important; }
+  .calg        { grid-template-columns: repeat(4, 1fr) !important; }
+}
+@media (min-width: 641px) and (max-width: 900px) { .g3 { grid-template-columns: 1fr 1fr; } }
+
+/* ── LAYOUT ── */
+.main  { max-width: 1100px; margin: 0 auto; padding: 1.35rem 1.5rem; }
+.card  { background: #fff; border-radius: var(--rl); padding: 1.2rem 1.4rem;  border: 1px solid var(--cream3); margin-bottom: .9rem; }
+.cardf { background: var(--cream2); border-radius: var(--rl); padding: 1.15rem 1.35rem; margin-bottom: .9rem; border: 1px solid var(--cream3); }
+.csm   { background: #fff; border-radius: var(--r); padding: .85rem 1rem; border: 1px solid var(--cream3); }
+.g2    { display: grid; grid-template-columns: 1fr 1fr;       gap: .9rem; }
+.g3    { display: grid; grid-template-columns: 1fr 1fr 1fr;   gap: .9rem; }
+.divl  { border: none; border-top: 1px solid var(--cream3); margin: .75rem 0; }
+
+/* ── BUTTONS ── */
+.btn {
+  border: none; border-radius: 8px; padding: 8px 14px;
+  font-family: 'DM Sans', sans-serif; font-size: .81rem; font-weight: 500;
+  cursor: pointer; transition: all .15s;
+  touch-action: manipulation; min-height: 38px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary   { background: var(--teal);   color: #fff; } .btn-primary:hover   { background: var(--teal-l);  }
+.btn-secondary { background: var(--cream2); color: var(--txt); } .btn-secondary:hover { background: var(--cream3); }
+.btn-amber     { background: var(--amber);  color: #fff; } .btn-amber:hover     { background: var(--amber-l); }
+.btn-sport     { background: var(--sport);  color: #fff; } .btn-sport:hover     { background: var(--sport-l); }
+.btn-success   { background: var(--green);  color: #fff; } .btn-success:hover   { background: var(--green-l); }
+.btn-sm     { padding: 5px 9px; font-size: .73rem; min-height: 30px; }
+.btn-danger { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
+
+/* ── PROGRESS ── */
+.progress-bar  { height: 9px; background: var(--cream2); border-radius: 5px; overflow: hidden; margin: 4px 0; }
+.progress-fill { height: 100%; border-radius: 5px; transition: width .5s ease; }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 20px;
+  font-size: .69rem; font-weight: 500; line-height: 1.4;
+}
+.badge-teal   { background: var(--teal-p);   color: #1a5a50; }
+.badge-green  { background: var(--green-p);  color: #1a4a28; }
+.badge-amber  { background: #fef3c7;         color: #92400e; }
+.badge-red    { background: #fee2e2;         color: #991b1b; }
+.badge-blue   { background: #dbeafe;         color: #1e40af; }
+.badge-purple { background: var(--purple-p); color: #4a1a7a; }
+.badge-coral  { background: var(--coral-p);  color: #8a2a18; }
+.badge-sport  { background: var(--sport-p);  color: #1a3a6a; }
+
+/* ── FORMS ── */
+input, select, textarea {
+  font-family: 'DM Sans', sans-serif;
+  border: 1px solid var(--cream3); border-radius: 8px;
+  padding: 9px 12px; font-size: .87rem;
+  width: 100%; background: #fff; color: var(--txt);
+  outline: none; transition: border-color .18s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--teal-l);
+  box-shadow: 0 0 0 3px rgba(42,122,110,.1);
+}
+label       { font-size: .78rem; font-weight: 500; color: var(--txt2); display: block; margin-bottom: 3px; }
+.form-group { margin-bottom: .85rem; }
+.tag {
+  display: inline-flex; align-items: center;
+  background: var(--cream2); border-radius: 6px;
+  padding: 2px 7px; font-size: .71rem; color: var(--txt2); margin: 2px;
 }
 
-/*
- * A better looking default horizontal rule
- */
+/* ── MAHLZEIT-KARTEN ── */
+.meal-card {
+  border: 1.5px solid var(--cream3); border-radius: var(--r);
+  padding: .65rem; cursor: pointer; transition: all .15s;
+  background: #fff; position: relative; touch-action: manipulation;
+}
+.meal-card:hover      { border-color: var(--teal-l); box-shadow: 0 2px 10px rgba(42,122,110,.1); }
+.meal-card.eaten      { border-color: var(--green);  background: var(--green-p); }
+.meal-card.drag-active { border-color: var(--teal-l) !important; background: var(--teal-p) !important; }
 
-hr {
-  display: block;
-  height: 1px;
-  border: 0;
-  border-top: 1px solid #ccc;
-  margin: 1em 0;
-  padding: 0;
+/* ── SPORT ── */
+.workout-card {
+  border-radius: var(--rl); padding: 1.2rem 1.4rem;
+  border: 1.5px solid var(--sport-p); background: #fff;
+  margin-bottom: .9rem; transition: all .15s;
+}
+.workout-card.done     { border-color: var(--green); background: var(--green-p); }
+.workout-card.rest-day { border-color: var(--cream3); background: var(--cream2); }
+
+.exercise-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: .6rem 0; border-bottom: 1px solid var(--cream2);
+}
+.exercise-row:last-child { border-bottom: none; }
+
+.exercise-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--sport-p); color: var(--sport);
+  display: flex; align-items: center; justify-content: center;
+  font-size: .7rem; font-weight: 700; flex-shrink: 0; margin-top: 1px;
 }
 
-/*
- * Remove the gap between audio, canvas, iframes,
- * images, videos and the bottom of their containers:
- * https://github.com/h5bp/html5-boilerplate/issues/440
- */
+.sets-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 2px 8px; border-radius: 6px;
+  font-size: .72rem; font-weight: 600;
+  background: var(--sport-p); color: var(--sport); white-space: nowrap;
+}
+.sets-badge.week12 { background: var(--green-p); color: #1a4a28; }
+.sets-badge.week56 { background: var(--coral-p); color: #8a2a18; }
 
-audio,
-canvas,
-iframe,
-img,
-svg,
-video {
-  vertical-align: middle;
+.week-phase-banner {
+  border-radius: var(--r); padding: .75rem 1rem; margin-bottom: .9rem;
+  display: flex; align-items: center; gap: 10px;
+}
+.phase-1 { background: var(--green-p); border: 1.5px solid var(--green); }
+.phase-2 { background: var(--teal-p);  border: 1.5px solid var(--teal);  }
+.phase-3 { background: var(--coral-p); border: 1.5px solid var(--coral); }
+
+.activity-bonus {
+  background: linear-gradient(135deg, var(--sport-p) 0%, var(--teal-p) 100%);
+  border: 1.5px solid var(--sport-l); border-radius: var(--r);
+  padding: .85rem 1rem; display: flex; align-items: center; gap: 12px;
 }
 
-/*
- * Remove default fieldset styles.
- */
+/* ── KALENDER ── */
+.day-header {
+  background: var(--navy); color: var(--cream);
+  padding: 5px 3px; border-radius: var(--r) var(--r) 0 0;
+  font-size: .7rem; font-weight: 500; text-align: center;
+}
+.day-col { border-radius: var(--r); overflow: hidden; border: 1px solid var(--cream3); }
 
-fieldset {
-  border: 0;
-  margin: 0;
-  padding: 0;
+/* ── CHECKBOX ── */
+.check-box {
+  width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--cream3);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .15s; flex-shrink: 0; touch-action: manipulation;
+}
+.check-box.checked          { background: var(--teal); border-color: var(--teal); }
+.check-box.checked::after   { content: '✓'; color: #fff; font-size: .76rem; font-weight: 700; }
+
+/* ── TABS ── */
+.tabs { display: flex; gap: 2px; background: var(--cream2); border-radius: 10px; padding: 3px; margin-bottom: .9rem; }
+.tab {
+  flex: 1; text-align: center; padding: 7px 3px; border-radius: 8px; cursor: pointer;
+  font-size: .77rem; font-weight: 500; color: var(--txt3); transition: all .15s;
+  border: none; background: none; font-family: 'DM Sans', sans-serif;
+  min-height: 36px; touch-action: manipulation;
+}
+.tab.active { background: #fff; color: var(--txt); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+
+/* ── SHOPPING ── */
+.shopping-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 0; border-bottom: 1px solid var(--cream2);
+}
+.shopping-item:last-child { border-bottom: none; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.48);
+  z-index: 300; display: flex; align-items: flex-end; justify-content: center;
+}
+@media (min-width: 641px) { .modal-overlay { align-items: center; padding: 1rem; } }
+.modal {
+  background: #fff; border-radius: var(--rl) var(--rl) 0 0;
+  padding: 1.35rem; width: 100%; max-height: 92vh; overflow-y: auto;
+}
+@media (min-width: 641px) { .modal { border-radius: var(--rl); max-width: 600px; } }
+.modal-drag {
+  width: 36px; height: 4px; background: var(--cream3);
+  border-radius: 2px; margin: 0 auto .9rem; display: block;
 }
 
-/*
- * Allow only vertical resizing of textareas.
- */
-
-textarea {
-  resize: vertical;
+/* ── TOAST ── */
+.snack {
+  position: fixed;
+  bottom: calc(var(--bnh) + var(--sbi) + 10px);
+  left: 1rem; right: 1rem;
+  background: var(--navy); color: var(--cream);
+  padding: 11px 16px; border-radius: 10px; font-size: .81rem;
+  z-index: 400; animation: slideIn .25s ease;
+  box-shadow: 0 4px 18px rgba(0,0,0,.22); text-align: center;
+}
+@media (min-width: 641px) {
+  .snack { left: auto; bottom: 1.5rem; right: 1.5rem; text-align: left; max-width: 340px; }
+}
+@keyframes slideIn {
+  from { transform: translateY(12px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
-/* ==========================================================================
-   Author's custom styles
-   ========================================================================== */
+/* ── MAKRO-ZEILEN ── */
+.macro-row   { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.macro-label { font-size: .73rem; color: var(--txt3); width: 84px; flex-shrink: 0; }
+.macro-value { font-size: .73rem; font-weight: 500; width: 92px; text-align: right; flex-shrink: 0; }
 
-/* ==========================================================================
-   Helper classes
-   ========================================================================== */
+/* ── SUPPLEMENT-BUTTON ── */
+.suppl-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 11px; border-radius: 10px; cursor: pointer;
+  transition: all .15s; border: 1.5px solid var(--cream3);
+  background: #fff; touch-action: manipulation;
+}
+.suppl-btn.done { border-color: var(--teal-l); background: var(--teal-p); }
 
-/*
- * Hide visually and from screen readers
- */
-
-.hidden,
-[hidden] {
-  display: none !important;
+/* ── LEFTOVER-KARTE ── */
+.leftover-card {
+  background: #fffcf0; border: 1.5px dashed var(--amber);
+  border-radius: var(--r); padding: .9rem; margin-bottom: .75rem;
 }
 
-/*
- * Hide only visually, but have it available for screen readers:
- * https://snook.ca/archives/html_and_css/hiding-content-for-accessibility
- *
- * 1. For long content, line feeds are not interpreted as spaces and small width
- *    causes content to wrap 1 word per line:
- *    https://medium.com/@jessebeach/beware-smushed-off-screen-accessible-text-5952a4c2cbfe
- */
+/* ── REZEPT-MAKRO-CHIPS ── */
+.rm   { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 5px; font-size: .7rem; font-weight: 600; }
+.rm-p { background: var(--teal-p);   color: #1a5a50; }
+.rm-c { background: #dbeafe;         color: #1e40af; }
+.rm-f { background: #fef3c7;         color: #92400e; }
+.rm-k { background: var(--purple-p); color: #4a1a7a; }
 
-.visually-hidden {
-  border: 0;
-  clip: rect(0, 0, 0, 0);
-  height: 1px;
-  margin: -1px;
-  overflow: hidden;
-  padding: 0;
-  position: absolute;
-  white-space: nowrap;
-  width: 1px;
-  /* 1 */
+/* ── INFO-STREIFEN ── */
+.istrip { background: var(--teal-p);   border-left: 4px solid var(--teal);   border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
+.gstrip { background: var(--green-p);  border-left: 4px solid var(--green);  border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
+.pstrip { background: var(--purple-p); border-left: 4px solid var(--purple); border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
+.sstrip { background: var(--sport-p);  border-left: 4px solid var(--sport);  border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
+
+/* ── WOCHEN-NAVIGATION ── */
+.week-nav     { display: flex; align-items: center; gap: .5rem; }
+.week-nav-btn {
+  background: #fff; border: 1px solid var(--cream3); border-radius: 8px;
+  width: 34px; height: 34px; cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s; touch-action: manipulation;
 }
+.week-nav-btn:hover { border-color: var(--teal-l); }
 
-/*
- * Extends the .visually-hidden class to allow the element
- * to be focusable when navigated to via the keyboard:
- * https://www.drupal.org/node/897638
- */
-
-.visually-hidden.focusable:active,
-.visually-hidden.focusable:focus {
-  clip: auto;
-  height: auto;
-  margin: 0;
-  overflow: visible;
-  position: static;
-  white-space: inherit;
-  width: auto;
+/* ── LOADER ── */
+.loading-overlay {
+  position: fixed; inset: 0; background: var(--cream); z-index: 500;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .9rem;
 }
-
-/*
- * Hide visually and from screen readers, but maintain layout
- */
-
-.invisible {
-  visibility: hidden;
+.spinner {
+  width: 34px; height: 34px;
+  border: 3px solid var(--cream3); border-top-color: var(--teal);
+  border-radius: 50%; animation: spin .7s linear infinite;
 }
-
-/*
- * Clearfix: contain floats
- *
- * The use of `table` rather than `block` is only necessary if using
- * `::before` to contain the top-margins of child elements.
- */
-
-.clearfix::before,
-.clearfix::after {
-  content: "";
-  display: table;
-}
-
-.clearfix::after {
-  clear: both;
-}
-
-/* ==========================================================================
-   EXAMPLE Media Queries for Responsive Design.
-   These examples override the primary ('mobile first') styles.
-   Modify as content requires.
-   ========================================================================== */
-
-@media only screen and (min-width: 35em) {
-  /* Style adjustments for viewports that meet the condition */
-}
-
-@media print,
-  (-webkit-min-device-pixel-ratio: 1.25),
-  (min-resolution: 1.25dppx),
-  (min-resolution: 120dpi) {
-  /* Style adjustments for high resolution devices */
-}
-
-/* ==========================================================================
-   Print styles.
-   Inlined to avoid the additional HTTP request:
-   https://www.phpied.com/delay-loading-your-print-css/
-   ========================================================================== */
-
-@media print {
-  *,
-  *::before,
-  *::after {
-    background: #fff !important;
-    color: #000 !important;
-    /* Black prints faster */
-    box-shadow: none !important;
-    text-shadow: none !important;
-  }
-
-  a,
-  a:visited {
-    text-decoration: underline;
-  }
-
-  a[href]::after {
-    content: " (" attr(href) ")";
-  }
-
-  abbr[title]::after {
-    content: " (" attr(title) ")";
-  }
-
-  /*
-   * Don't show links that are fragment identifiers,
-   * or use the `javascript:` pseudo protocol
-   */
-  a[href^="#"]::after,
-  a[href^="javascript:"]::after {
-    content: "";
-  }
-
-  pre {
-    white-space: pre-wrap !important;
-  }
-
-  pre,
-  blockquote {
-    border: 1px solid #999;
-    page-break-inside: avoid;
-  }
-
-  tr,
-  img {
-    page-break-inside: avoid;
-  }
-
-  p,
-  h2,
-  h3 {
-    orphans: 3;
-    widows: 3;
-  }
-
-  h2,
-  h3 {
-    page-break-after: avoid;
-  }
-}
-
+@keyframes spin { to { transform: rotate(360deg); } }
