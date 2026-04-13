@@ -9,9 +9,9 @@
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const USER_ID = 'mein_planer';
   </script>
-
-  <!-- Rezepte aus externer Datei – window.RECIPES wird hier gesetzt -->
+  <!-- Externe Datendateien -->
   <script src="js/recipes.js"></script>
+  <script src="js/sportplan.js"></script>
 
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
@@ -27,154 +27,109 @@
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
 
   <style>
-    /* ── RESET & ROOT ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --navy:     #1a2d4a;
-      --navy-mid: #2d4a6e;
-      --navy-l:   #3d6490;
-      --teal:     #2a7a6e;
-      --teal-l:   #3d9e8e;
-      --teal-p:   #e0f4f1;
-      --cream:    #f4f1ec;
-      --cream2:   #ece8e0;
-      --cream3:   #ddd8ce;
-      --amber:    #c88030;
-      --amber-l:  #e8a048;
-      --green:    #3a7a4a;
-      --green-l:  #52a066;
-      --green-p:  #e4f4e8;
-      --purple:   #6a4a8a;
-      --purple-p: #f0ebf8;
-      --coral:    #c8523a;
+      --navy:     #1a2d4a;  --navy-mid: #2d4a6e;  --navy-l: #3d6490;
+      --teal:     #2a7a6e;  --teal-l:   #3d9e8e;  --teal-p: #e0f4f1;
+      --cream:    #f4f1ec;  --cream2:   #ece8e0;  --cream3: #ddd8ce;
+      --amber:    #c88030;  --amber-l:  #e8a048;
+      --green:    #3a7a4a;  --green-l:  #52a066;  --green-p: #e4f4e8;
+      --purple:   #6a4a8a;  --purple-p: #f0ebf8;
+      --coral:    #c8523a;  --coral-l:  #e87060;  --coral-p: #fce7e2;
       --red:      #b91c1c;
-      --blue:     #3a6b8a;
-      --txt:      #1a2420;
-      --txt2:     #38504a;
-      --txt3:     #6a7d78;
-      --r:        12px;
-      --rl:       18px;
-      --nh:       60px;   /* nav height desktop */
-      --bnh:      68px;   /* bottom nav height mobile */
-      --sbi:      env(safe-area-inset-bottom, 0px);
+      --sport:    #1a4a7a;  --sport-l:  #2a6aaa;  --sport-p: #e0ecf8;
+      --txt:      #1a2420;  --txt2:     #38504a;  --txt3: #6a7d78;
+      --r: 12px;  --rl: 18px;  --nh: 60px;  --bnh: 68px;
+      --sbi: env(safe-area-inset-bottom, 0px);
     }
-
     html, body { height: 100%; }
     body {
       font-family: 'DM Sans', sans-serif;
-      background: var(--cream);
-      color: var(--txt);
-      min-height: 100vh;
-      overflow-x: hidden;
-      /* Mobile: Platz für Bottom-Nav reservieren */
+      background: var(--cream); color: var(--txt);
+      min-height: 100vh; overflow-x: hidden;
       padding-bottom: calc(var(--bnh) + var(--sbi));
     }
     @media (min-width: 641px) { body { padding-bottom: 0; } }
     h1, h2, h3, h4 { font-family: 'DM Serif Display', serif; }
 
-    /* ── TOP HEADER ── */
+    /* ── HEADER ── */
     .app-header {
-      background: var(--navy);
-      padding: 0 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      height: var(--nh);
-      position: sticky;
-      top: 0;
-      z-index: 200; /* hoch genug damit Modal darunter ist */
+      background: var(--navy); padding: 0 1.25rem;
+      display: flex; align-items: center; justify-content: space-between;
+      height: var(--nh); position: sticky; top: 0; z-index: 200;
       box-shadow: 0 2px 20px rgba(0,0,0,.32);
     }
     .logo-wrap { display: flex; align-items: center; gap: 9px; }
     .logo-dot {
-      width: 28px; height: 28px;
-      background: var(--teal-l);
-      border-radius: 8px;
+      width: 28px; height: 28px; background: var(--teal-l); border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
       font-size: .9rem; flex-shrink: 0;
     }
     .app-header h1 { font-size: 1.15rem; font-weight: 400; color: var(--cream); line-height: 1; }
     .app-header .tagline { font-size: .6rem; color: rgba(244,241,236,.48); font-family: 'DM Sans', sans-serif; letter-spacing: .03em; }
-
-    /* Desktop-Navigation (versteckt auf Mobile) */
     .desktop-nav { display: flex; gap: 2px; }
     .desktop-nav button {
-      background: none; border: none;
-      color: rgba(244,241,236,.6);
-      padding: 10px 12px; cursor: pointer; border-radius: 8px;
-      font-size: .78rem; font-family: 'DM Sans', sans-serif; font-weight: 500;
+      background: none; border: none; color: rgba(244,241,236,.6);
+      padding: 10px 11px; cursor: pointer; border-radius: 8px;
+      font-size: .76rem; font-family: 'DM Sans', sans-serif; font-weight: 500;
       transition: all .15s; white-space: nowrap; min-height: 44px;
     }
     .desktop-nav button.active,
     .desktop-nav button:hover { color: var(--cream); background: rgba(244,241,236,.13); }
 
-    /* ── BOTTOM NAV (Mobile) ── */
+    /* ── BOTTOM NAV ── */
     .bottom-nav {
-      display: none; /* wird per Media-Query eingeblendet */
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      z-index: 200; /* gleiche Ebene wie Header */
-      background: var(--navy);
+      display: none; position: fixed; bottom: 0; left: 0; right: 0;
+      z-index: 200; background: var(--navy);
       box-shadow: 0 -2px 16px rgba(0,0,0,.28);
-      /* Safe-Area für iPhone-Notch */
       padding-bottom: var(--sbi);
     }
-    .bottom-nav-inner {
-      display: flex;
-      height: var(--bnh);
-    }
+    .bottom-nav-inner { display: flex; height: var(--bnh); }
     .bottom-nav button {
-      flex: 1;
-      background: none; border: none;
+      flex: 1; background: none; border: none;
       color: rgba(244,241,236,.48);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      gap: 3px;
-      font-size: .59rem; font-family: 'DM Sans', sans-serif; font-weight: 500;
-      cursor: pointer; padding: 4px 2px;
-      transition: color .15s;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      min-width: 44px; /* Mindest-Tappfläche */
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 2px; font-size: .57rem; font-family: 'DM Sans', sans-serif; font-weight: 500;
+      cursor: pointer; padding: 4px 1px; transition: color .15s;
+      -webkit-tap-highlight-color: transparent; touch-action: manipulation; min-width: 44px;
     }
-    .bottom-nav button .nav-icon { font-size: 1.2rem; line-height: 1; transition: transform .15s; }
+    .bottom-nav button .nav-icon { font-size: 1.15rem; line-height: 1; transition: transform .15s; }
     .bottom-nav button.active { color: var(--teal-l); }
     .bottom-nav button.active .nav-icon { transform: translateY(-2px); }
 
-    /* ── RESPONSIVE BREAKPOINTS ── */
+    /* ── RESPONSIVE ── */
     @media (max-width: 640px) {
       .desktop-nav { display: none; }
-      .bottom-nav  { display: block; } /* bottom-nav-inner kümmert sich um das Flex-Layout */
-      .main        { padding: .9rem .75rem; }
-      .g2, .g3     { grid-template-columns: 1fr; }
-      .g2m         { grid-template-columns: 1fr 1fr !important; }
-      .calg        { grid-template-columns: repeat(4, 1fr) !important; }
+      .bottom-nav  { display: block; }
+      .main { padding: .9rem .75rem; }
+      .g2, .g3 { grid-template-columns: 1fr; }
+      .g2m { grid-template-columns: 1fr 1fr !important; }
+      .calg { grid-template-columns: repeat(4, 1fr) !important; }
     }
-    @media (min-width: 641px) and (max-width: 900px) {
-      .g3 { grid-template-columns: 1fr 1fr; }
-    }
+    @media (min-width: 641px) and (max-width: 900px) { .g3 { grid-template-columns: 1fr 1fr; } }
 
     /* ── LAYOUT ── */
     .main { max-width: 1100px; margin: 0 auto; padding: 1.35rem 1.5rem; }
-    .card    { background: #fff; border-radius: var(--rl); padding: 1.2rem 1.4rem; border: 1px solid var(--cream3); margin-bottom: .9rem; }
-    .cardf   { background: var(--cream2); border-radius: var(--rl); padding: 1.15rem 1.35rem; margin-bottom: .9rem; border: 1px solid var(--cream3); }
-    .csm     { background: #fff; border-radius: var(--r); padding: .85rem 1rem; border: 1px solid var(--cream3); }
-    .g2  { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
-    .g3  { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .9rem; }
+    .card  { background: #fff; border-radius: var(--rl); padding: 1.2rem 1.4rem; border: 1px solid var(--cream3); margin-bottom: .9rem; }
+    .cardf { background: var(--cream2); border-radius: var(--rl); padding: 1.15rem 1.35rem; margin-bottom: .9rem; border: 1px solid var(--cream3); }
+    .csm   { background: #fff; border-radius: var(--r); padding: .85rem 1rem; border: 1px solid var(--cream3); }
+    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
+    .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .9rem; }
     .divl { border: none; border-top: 1px solid var(--cream3); margin: .75rem 0; }
 
     /* ── BUTTONS ── */
     .btn {
       border: none; border-radius: 8px; padding: 8px 14px;
       font-family: 'DM Sans', sans-serif; font-size: .81rem; font-weight: 500;
-      cursor: pointer; transition: all .15s;
-      touch-action: manipulation; min-height: 38px;
+      cursor: pointer; transition: all .15s; touch-action: manipulation; min-height: 38px;
       display: inline-flex; align-items: center; justify-content: center; gap: 5px;
       -webkit-tap-highlight-color: transparent;
     }
-    .btn-primary   { background: var(--teal);  color: #fff; } .btn-primary:hover  { background: var(--teal-l); }
+    .btn-primary   { background: var(--teal);  color: #fff; } .btn-primary:hover   { background: var(--teal-l); }
     .btn-secondary { background: var(--cream2); color: var(--txt); } .btn-secondary:hover { background: var(--cream3); }
-    .btn-amber     { background: var(--amber);  color: #fff; } .btn-amber:hover    { background: var(--amber-l); }
+    .btn-amber     { background: var(--amber);  color: #fff; } .btn-amber:hover     { background: var(--amber-l); }
+    .btn-sport     { background: var(--sport);  color: #fff; } .btn-sport:hover     { background: var(--sport-l); }
+    .btn-success   { background: var(--green);  color: #fff; } .btn-success:hover   { background: var(--green-l); }
     .btn-sm   { padding: 5px 9px; font-size: .73rem; min-height: 30px; }
     .btn-danger { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
 
@@ -190,7 +145,8 @@
     .badge-red    { background: #fee2e2; color: #991b1b; }
     .badge-blue   { background: #dbeafe; color: #1e40af; }
     .badge-purple { background: var(--purple-p); color: #4a1a7a; }
-    .badge-coral  { background: #fce7e2; color: #8a2a18; }
+    .badge-coral  { background: var(--coral-p);  color: #8a2a18; }
+    .badge-sport  { background: var(--sport-p);  color: #1a3a6a; }
 
     /* ── FORMS ── */
     input, select, textarea {
@@ -203,7 +159,7 @@
     .form-group { margin-bottom: .85rem; }
     .tag { display: inline-flex; align-items: center; background: var(--cream2); border-radius: 6px; padding: 2px 7px; font-size: .71rem; color: var(--txt2); margin: 2px; }
 
-    /* ── MAHLZEIT-KARTEN ── */
+    /* ── MEAL & WORKOUT CARDS ── */
     .meal-card {
       border: 1.5px solid var(--cream3); border-radius: var(--r);
       padding: .65rem; cursor: pointer; transition: all .15s;
@@ -212,6 +168,45 @@
     .meal-card:hover { border-color: var(--teal-l); box-shadow: 0 2px 10px rgba(42,122,110,.1); }
     .meal-card.eaten { border-color: var(--green); background: var(--green-p); }
     .meal-card.drag-active { border-color: var(--teal-l) !important; background: var(--teal-p) !important; }
+
+    /* ── SPORT-SPEZIFISCH ── */
+    .workout-card {
+      border-radius: var(--rl); padding: 1.2rem 1.4rem;
+      border: 1.5px solid var(--sport-p); background: #fff; margin-bottom: .9rem;
+      transition: all .15s;
+    }
+    .workout-card.done { border-color: var(--green); background: var(--green-p); }
+    .workout-card.rest-day { border-color: var(--cream3); background: var(--cream2); }
+    .exercise-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: .6rem 0; border-bottom: 1px solid var(--cream2);
+    }
+    .exercise-row:last-child { border-bottom: none; }
+    .exercise-num {
+      width: 22px; height: 22px; border-radius: 50%;
+      background: var(--sport-p); color: var(--sport);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .7rem; font-weight: 700; flex-shrink: 0; margin-top: 1px;
+    }
+    .sets-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 2px 8px; border-radius: 6px; font-size: .72rem; font-weight: 600;
+      background: var(--sport-p); color: var(--sport); white-space: nowrap;
+    }
+    .sets-badge.week12 { background: var(--green-p); color: #1a4a28; }
+    .sets-badge.week56 { background: var(--coral-p); color: #8a2a18; }
+    .week-phase-banner {
+      border-radius: var(--r); padding: .75rem 1rem; margin-bottom: .9rem;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .phase-1 { background: var(--green-p); border: 1.5px solid var(--green); }
+    .phase-2 { background: var(--teal-p);  border: 1.5px solid var(--teal); }
+    .phase-3 { background: var(--coral-p); border: 1.5px solid var(--coral); }
+    .activity-bonus {
+      background: linear-gradient(135deg, var(--sport-p) 0%, var(--teal-p) 100%);
+      border: 1.5px solid var(--sport-l); border-radius: var(--r);
+      padding: .85rem 1rem; display: flex; align-items: center; gap: 12px;
+    }
 
     /* ── KALENDER ── */
     .day-header { background: var(--navy); color: var(--cream); padding: 5px 3px; border-radius: var(--r) var(--r) 0 0; font-size: .7rem; font-weight: 500; text-align: center; }
@@ -228,7 +223,7 @@
 
     /* ── TABS ── */
     .tabs { display: flex; gap: 2px; background: var(--cream2); border-radius: 10px; padding: 3px; margin-bottom: .9rem; }
-    .tab  {
+    .tab {
       flex: 1; text-align: center; padding: 7px 3px; border-radius: 8px; cursor: pointer;
       font-size: .77rem; font-weight: 500; color: var(--txt3); transition: all .15s;
       border: none; background: none; font-family: 'DM Sans', sans-serif; min-height: 36px;
@@ -243,8 +238,7 @@
     /* ── MODAL ── */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,.48);
-      z-index: 300; /* über Header und Bottom-Nav */
-      display: flex; align-items: flex-end; justify-content: center;
+      z-index: 300; display: flex; align-items: flex-end; justify-content: center;
     }
     @media (min-width: 641px) { .modal-overlay { align-items: center; padding: 1rem; } }
     .modal { background: #fff; border-radius: var(--rl) var(--rl) 0 0; padding: 1.35rem; width: 100%; max-height: 92vh; overflow-y: auto; }
@@ -253,15 +247,11 @@
 
     /* ── TOAST ── */
     .snack {
-      position: fixed;
-      bottom: calc(var(--bnh) + var(--sbi) + 10px);
-      left: 1rem; right: 1rem;
-      background: var(--navy); color: var(--cream);
+      position: fixed; bottom: calc(var(--bnh) + var(--sbi) + 10px);
+      left: 1rem; right: 1rem; background: var(--navy); color: var(--cream);
       padding: 11px 16px; border-radius: 10px; font-size: .81rem;
-      z-index: 400; /* über allem */
-      animation: slideIn .25s ease;
-      box-shadow: 0 4px 18px rgba(0,0,0,.22);
-      text-align: center;
+      z-index: 400; animation: slideIn .25s ease;
+      box-shadow: 0 4px 18px rgba(0,0,0,.22); text-align: center;
     }
     @media (min-width: 641px) { .snack { left: auto; bottom: 1.5rem; right: 1.5rem; text-align: left; max-width: 340px; } }
     @keyframes slideIn { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -285,10 +275,11 @@
     .rm-f { background: #fef3c7; color: #92400e; }
     .rm-k { background: var(--purple-p); color: #4a1a7a; }
 
-    /* ── INFO-STREIFEN (Health View) ── */
+    /* ── INFO-STREIFEN ── */
     .istrip { background: var(--teal-p);   border-left: 4px solid var(--teal);   border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
     .gstrip { background: var(--green-p);  border-left: 4px solid var(--green);  border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
     .pstrip { background: var(--purple-p); border-left: 4px solid var(--purple); border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
+    .sstrip { background: var(--sport-p);  border-left: 4px solid var(--sport);  border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
 
     /* ── WOCHEN-NAVIGATION ── */
     .week-nav { display: flex; align-items: center; gap: .5rem; }
@@ -307,18 +298,61 @@
 <script type="text/babel">
   const { useState, useEffect, useCallback, useRef, useMemo } = React;
 
-  // Rezepte kommen aus js/recipes.js (window.RECIPES)
-  const RECIPES = window.RECIPES || [];
+  const RECIPES  = window.RECIPES  || [];
+  const WORKOUTS = window.WORKOUTS || [];
 
-  // ── PERSON & MAKROS ────────────────────────────────────────────────────────
+  // ── PLAN-START & SPORT-KONSTANTEN ─────────────────────────────────────────
+  const PLAN_START = new Date(2026, 3, 13); // Mo 13. April 2026
+
+  // PPL-Schema: 0=So,1=Mo,2=Di,3=Mi,4=Do,5=Fr,6=Sa
+  // Mo=Push, Mi=Pull, Fr=Legs, sonst Rest
+  const DOW_TO_WORKOUT = {
+    1: 'ppl_push',  // Montag
+    3: 'ppl_pull',  // Mittwoch
+    5: 'ppl_legs',  // Freitag
+  };
+
+  /** Liefert das Basis-Workout für ein bestimmtes Datum (ohne Verschiebungen). */
+  function baseWorkoutForDate(dateObj) {
+    const dow = dateObj.getDay(); // 0=So … 6=Sa
+    const wid = DOW_TO_WORKOUT[dow];
+    return WORKOUTS.find(w => w.id === (wid || 'rest')) || WORKOUTS.find(w => w.id === 'rest');
+  }
+
+  /**
+   * Berechnet die Trainings-Phase basierend auf dem Plan-Startdatum.
+   * Woche 1-2 → phase 1 (2 Sätze)
+   * Woche 3-4 → phase 2 (Original)
+   * Woche 5-6 → phase 3 (+1 Satz)
+   */
+  function getTrainingPhase(dateObj) {
+    const msPerDay = 86400000;
+    const daysDiff = Math.floor((dateObj - PLAN_START) / msPerDay);
+    if (daysDiff < 0)  return 2; // vor Plan-Start → Original
+    const week = Math.floor(daysDiff / 7) + 1;
+    if (week <= 2) return 1;
+    if (week <= 4) return 2;
+    return 3;
+  }
+
+  /** Passt die Sätze eines Workouts an die Phase an. */
+  function adjustedExercises(workout, phase) {
+    return workout.exercises.map(ex => {
+      let sets = ex.sets;
+      if (phase === 1) sets = Math.min(sets, 2);
+      if (phase === 3) sets = sets + 1;
+      return { ...ex, sets };
+    });
+  }
+
+  // ── PERSON & MAKROS ───────────────────────────────────────────────────────
   const PERSON = { gender: 'm', height: 190, weight: 85, age: 35, goalKg: 89 };
 
   function calcMacros(p) {
-    // Mifflin-St Jeor BMR, moderate activity 1.55, +250 kcal Aufbauüberschuss
     const bmr = 88.362 + 13.397 * p.weight + 4.799 * p.height - 5.677 * p.age;
     const target = Math.round(bmr * 1.55) + 250;
-    const protein = Math.round(p.weight * 1.7);        // ~28 % bei 85 kg
-    const carbs   = Math.round(target * 0.35 / 4);     // 35 % Carbs
+    const protein = Math.round(p.weight * 1.7);
+    const carbs   = Math.round(target * 0.35 / 4);
     const fat     = Math.round((target - protein * 4 - carbs * 4) / 9);
     const pp = Math.round(protein * 4 / target * 100);
     const cp = Math.round(carbs   * 4 / target * 100);
@@ -326,34 +360,32 @@
     return { kcal: target, protein, carbs, fat, pp, cp, fp };
   }
 
-  // ── PLAN BUILDER: 13. April – 24. Mai 2026 (6 Wochen) ────────────────────
+  // ── PLAN BUILDER ──────────────────────────────────────────────────────────
   function buildWeekPlan() {
     const plan = {};
-    const start = new Date(2026, 3, 13); // Mo 13. April
     const bf = RECIPES.filter(r => r.type === 'breakfast');
     const lu = RECIPES.filter(r => r.type === 'lunch');
     const di = RECIPES.filter(r => r.type === 'dinner');
-    if (!bf.length || !lu.length || !di.length) {
-      console.error('RECIPES nicht geladen – recipes.js fehlt?');
-      return plan;
-    }
+    if (!bf.length || !lu.length || !di.length) { console.error('RECIPES fehlt'); return plan; }
     for (let week = 0; week < 6; week++) {
       for (let day = 0; day < 7; day++) {
-        const d = new Date(start);
+        const d = new Date(PLAN_START);
         d.setDate(d.getDate() + week * 7 + day);
         const key = dk(d);
         plan[key] = {
-          breakfast: bf[(week * 7 + day)         % bf.length],
-          lunch:     lu[(week * 7 + day + 2)     % lu.length],
-          dinner:    di[(week * 7 + day + 5)     % di.length],
-          eaten: { breakfast: false, lunch: false, dinner: false },
+          breakfast: bf[(week * 7 + day)     % bf.length],
+          lunch:     lu[(week * 7 + day + 2) % lu.length],
+          dinner:    di[(week * 7 + day + 5) % di.length],
+          eaten:        { breakfast: false, lunch: false, dinner: false },
+          workout_id:   baseWorkoutForDate(d).id,  // Standard-Zuweisung
+          workout_done: false,
         };
       }
     }
     return plan;
   }
 
-  // ── HELPER-FUNKTIONEN ─────────────────────────────────────────────────────
+  // ── HELPERS ───────────────────────────────────────────────────────────────
   function dk(d)  { return d instanceof Date ? d.toISOString().slice(0, 10) : d; }
   function fmt(v) { return typeof v === 'number' ? Math.round(v) : v; }
   function getMonday(d) {
@@ -367,10 +399,14 @@
     const w1 = new Date(dt.getFullYear(), 0, 4);
     return 1 + Math.round(((dt - w1) / 86400000 - 3 + (w1.getDay() + 6) % 7) / 7);
   }
+  function addDays(dateStr, n) {
+    const d = new Date(dateStr); d.setDate(d.getDate() + n); return dk(d);
+  }
   const DAYS   = ['Mo','Di','Mi','Do','Fr','Sa','So'];
   const MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
+  const DAY_FULL = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
 
-  // ── SUPABASE LAYER ────────────────────────────────────────────────────────
+  // ── SUPABASE ──────────────────────────────────────────────────────────────
   async function dbLoadPlan() {
     try {
       const { data, error } = await sb.from('calendar_days').select('*').eq('user_id', USER_ID);
@@ -384,6 +420,8 @@
           lunch:     !!row.eaten?.lunch,
           dinner:    !!row.eaten?.dinner,
         };
+        plan[key].workout_done = !!row.workout_done;
+        if (row.workout_id) plan[key].workout_id = row.workout_id;
         ['breakfast','lunch','dinner'].forEach(m => {
           const rid = row[m + '_id'];
           if (rid) { const r = RECIPES.find(x => x.id === rid); if (r) plan[key][m] = r; }
@@ -401,11 +439,9 @@
         breakfast_id: day.breakfast?.id || null,
         lunch_id:     day.lunch?.id     || null,
         dinner_id:    day.dinner?.id    || null,
-        eaten: {
-          breakfast: !!day.eaten?.breakfast,
-          lunch:     !!day.eaten?.lunch,
-          dinner:    !!day.eaten?.dinner,
-        },
+        eaten:        { breakfast: !!day.eaten?.breakfast, lunch: !!day.eaten?.lunch, dinner: !!day.eaten?.dinner },
+        workout_id:   day.workout_id   || null,
+        workout_done: !!day.workout_done,
       }, { onConflict: 'user_id,date_key' });
     } catch(e) { console.warn('dbSaveDay:', e); }
   }
@@ -417,9 +453,7 @@
       const obj = {};
       data.forEach(r => {
         const k = (r.date_key || '').slice(0, 10);
-        obj[k + '_mg']   = !!r.magnesium;
-        obj[k + '_k']    = !!r.kalium;
-        obj[k + '_salt'] = !!r.natrium;
+        obj[k + '_mg'] = !!r.magnesium; obj[k + '_k'] = !!r.kalium; obj[k + '_salt'] = !!r.natrium;
       });
       return obj;
     } catch(e) { return {}; }
@@ -442,22 +476,20 @@
       return data.map(r => ({ ...r.recipe_data, id: 'c' + r.id, supabase_id: r.id, custom: true }));
     } catch(e) { return []; }
   }
-
   async function dbSaveCustomRecipe(recipe) {
     try {
       const { data } = await sb.from('custom_recipes').insert({ user_id: USER_ID, recipe_data: recipe }).select().single();
       return data ? ('c' + data.id) : recipe.id;
     } catch(e) { return recipe.id; }
   }
-
   async function dbDeleteCustomRecipe(supabaseId) {
     try { await sb.from('custom_recipes').delete().eq('id', supabaseId).eq('user_id', USER_ID); }
-    catch(e) { console.warn('dbDeleteCustomRecipe:', e); }
+    catch(e) {}
   }
 
-  // ── GEMEINSAME UI-KOMPONENTEN ─────────────────────────────────────────────
+  // ── SHARED UI ─────────────────────────────────────────────────────────────
   function ProgressBar({ value, max, color = 'var(--teal)', label, unit = 'g' }) {
-    const pct = Math.min(100, max > 0 ? (value / max) * 100 : 0);
+    const pct  = Math.min(100, max > 0 ? (value / max) * 100 : 0);
     const over = value > max * 1.05;
     return (
       <div className="macro-row">
@@ -487,15 +519,11 @@
   }
 
   const TAG_COLORS = {
-    pcos:        ['badge-purple', '🌸 PCOS'],
-    lowgi:       ['badge-green',  '📉 Low-GI'],
-    protein:     ['badge-teal',   '💪 Protein'],
-    legumes:     ['badge-amber',  '🫘 Hülsenf.'],
-    batch:       ['badge-blue',   '📦 Batch'],
-    schnell:     ['badge-teal',   '⚡ Schnell'],
-    prep:        ['badge-blue',   '🌙 Prep'],
-    vegan:       ['badge-green',  '🌱 Vegan'],
-    muskelaufbau:['badge-coral',  '🏋️ Aufbau'],
+    pcos: ['badge-purple','🌸 PCOS'], lowgi: ['badge-green','📉 Low-GI'],
+    protein: ['badge-teal','💪 Protein'], legumes: ['badge-amber','🫘 Hülsenf.'],
+    batch: ['badge-blue','📦 Batch'], schnell: ['badge-teal','⚡ Schnell'],
+    prep: ['badge-blue','🌙 Prep'], vegan: ['badge-green','🌱 Vegan'],
+    muskelaufbau: ['badge-coral','🏋️ Aufbau'],
   };
   function TagBadge({ tag }) {
     const [cls, lbl] = TAG_COLORS[tag] || ['badge-amber', tag];
@@ -512,13 +540,13 @@
     const [batchMode,   setBatchMode]   = useState(false);
     const [curWeek,     setCurWeek]     = useState(() => getMonday(new Date()));
     const [shopWeek,    setShopWeek]    = useState(() => getMonday(new Date()));
+    const [sportWeek,   setSportWeek]   = useState(() => getMonday(new Date()));
     const [snack,       setSnack]       = useState(null);
     const [modal,       setModal]       = useState(null);
 
-    const macros    = useMemo(() => calcMacros(PERSON), []);
-    const allRecipes= useMemo(() => [...RECIPES, ...customRecs], [customRecs]);
+    const macros     = useMemo(() => calcMacros(PERSON), []);
+    const allRecipes = useMemo(() => [...RECIPES, ...customRecs], [customRecs]);
 
-    // Initialer Supabase-Load
     useEffect(() => {
       (async () => {
         const [planData, supplData, recData] = await Promise.all([
@@ -531,8 +559,8 @@
       })();
     }, []);
 
-    const toast = useCallback(msg => setSnack(msg), []);
-    const todayKey = dk(new Date());
+    const toast      = useCallback(msg => setSnack(msg), []);
+    const todayKey   = dk(new Date());
 
     function dayMacros(dateK) {
       const day = plan[dateK];
@@ -561,9 +589,39 @@
       });
     }
 
+    async function toggleWorkoutDone(dateK) {
+      setPlan(prev => {
+        const np = { ...prev, [dateK]: { ...prev[dateK], workout_done: !prev[dateK].workout_done } };
+        dbSaveDay(dateK, np[dateK]);
+        return np;
+      });
+    }
+
+    /**
+     * Verschiebt ein Workout auf den Folgetag.
+     * Die PPL-Reihenfolge wird dabei bewahrt: alle folgenden Trainingstage
+     * der Woche rücken um einen Tag nach hinten.
+     */
+    function shiftWorkout(dateK) {
+      const nextKey = addDays(dateK, 1);
+      setPlan(prev => {
+        if (!prev[nextKey]) { toast('⚠️ Kein Folgetag im Plan vorhanden.'); return prev; }
+        const np = { ...prev };
+        // Tausche workout_id zwischen heute und morgen
+        const todayWid  = np[dateK].workout_id;
+        const tomorrowWid = np[nextKey].workout_id;
+        np[dateK]   = { ...np[dateK],   workout_id: tomorrowWid };
+        np[nextKey] = { ...np[nextKey], workout_id: todayWid    };
+        dbSaveDay(dateK,   np[dateK]);
+        dbSaveDay(nextKey, np[nextKey]);
+        return np;
+      });
+      toast('📅 Workout auf morgen verschoben!');
+    }
+
     async function toggleSupplement(dateK, field) {
       const key = dateK + '_' + field;
-      const nv = !(supplements[key] || false);
+      const nv  = !(supplements[key] || false);
       setSupplements(s => ({ ...s, [key]: nv }));
       await dbSaveSupplement(dateK, field, nv);
     }
@@ -573,7 +631,6 @@
       setCustomRecs(r => [...r, { ...recipe, id: nid, custom: true }]);
       toast('✅ Rezept gespeichert!');
     }
-
     async function deleteCustomRecipe(recipe) {
       if (recipe.supabase_id) await dbDeleteCustomRecipe(recipe.supabase_id);
       setCustomRecs(r => r.filter(x => x.id !== recipe.id));
@@ -587,10 +644,8 @@
         const idx  = days.indexOf(dateK);
         const n    = recipe.batchDays || 1;
         for (let i = 0; i < n && idx + i < days.length; i++) {
-          const d = { ...np[days[idx + i]] };
-          d[meal] = recipe;
-          np[days[idx + i]] = d;
-          dbSaveDay(days[idx + i], d);
+          const d = { ...np[days[idx + i]] }; d[meal] = recipe;
+          np[days[idx + i]] = d; dbSaveDay(days[idx + i], d);
         }
         return np;
       });
@@ -627,6 +682,7 @@
 
     const navItems = [
       { k:'dashboard', icon:'🏠', label:'Start'      },
+      { k:'sport',     icon:'🏋️', label:'Sport'      },
       { k:'calendar',  icon:'📅', label:'Plan'       },
       { k:'shopping',  icon:'🛒', label:'Einkauf'    },
       { k:'health',    icon:'🩺', label:'Gesundheit' },
@@ -634,11 +690,16 @@
     ];
 
     if (loading) return <LoadingScreen/>;
-    const todayM = dayMacros(todayKey);
+
+    const todayM       = dayMacros(todayKey);
+    const todayDay     = plan[todayKey];
+    const todayWorkout = todayDay ? WORKOUTS.find(w => w.id === todayDay.workout_id) || WORKOUTS.find(w => w.id === 'rest') : null;
+    const workoutDone  = !!todayDay?.workout_done;
+    // Aktivitäts-Bonus: verbannte Kalorien des heutigen Workouts (nur wenn erledigt)
+    const activityBonus = (workoutDone && todayWorkout) ? todayWorkout.kcalBurn : 0;
 
     return (
       <div>
-        {/* ── Header ── */}
         <header className="app-header">
           <div className="logo-wrap">
             <div className="logo-dot">🥦</div>
@@ -656,25 +717,33 @@
           </nav>
         </header>
 
-        {/* ── Hauptinhalt ── */}
         <div className="main">
-          {tab === 'dashboard' && <Dashboard macros={macros} todayM={todayM} plan={plan} todayKey={todayKey} toggleEaten={toggleEaten} supplements={supplements} toggleSupplement={toggleSupplement}/>}
-          {tab === 'calendar'  && <CalendarView plan={plan} updatePlanDay={updatePlanDay} curWeek={curWeek} setCurWeek={setCurWeek} toggleEaten={toggleEaten} batchMode={batchMode} setBatchMode={setBatchMode} applyBatch={applyBatch} allRecipes={allRecipes} leftovers={leftovers} toast={toast} setModal={setModal}/>}
-          {tab === 'shopping'  && <ShoppingView shoppingList={shoppingList} shopWeek={shopWeek} setShopWeek={setShopWeek} leftovers={leftovers}/>}
-          {tab === 'health'    && <HealthView supplements={supplements} toggleSupplement={toggleSupplement}/>}
-          {tab === 'recipes'   && <RecipesView customRecs={customRecs} allRecipes={allRecipes} addCustomRecipe={addCustomRecipe} deleteCustomRecipe={deleteCustomRecipe} toast={toast}/>}
+          {tab === 'dashboard' &&
+            <Dashboard macros={macros} todayM={todayM} plan={plan} todayKey={todayKey}
+                       toggleEaten={toggleEaten} supplements={supplements} toggleSupplement={toggleSupplement}
+                       todayWorkout={todayWorkout} workoutDone={workoutDone} activityBonus={activityBonus}
+                       toggleWorkoutDone={toggleWorkoutDone}/>}
+          {tab === 'sport' &&
+            <SportView plan={plan} sportWeek={sportWeek} setSportWeek={setSportWeek}
+                       toggleWorkoutDone={toggleWorkoutDone} shiftWorkout={shiftWorkout} todayKey={todayKey}/>}
+          {tab === 'calendar' &&
+            <CalendarView plan={plan} updatePlanDay={updatePlanDay} curWeek={curWeek}
+                          setCurWeek={setCurWeek} toggleEaten={toggleEaten} batchMode={batchMode}
+                          setBatchMode={setBatchMode} applyBatch={applyBatch} allRecipes={allRecipes}
+                          leftovers={leftovers} toast={toast} setModal={setModal}/>}
+          {tab === 'shopping' &&
+            <ShoppingView shoppingList={shoppingList} shopWeek={shopWeek} setShopWeek={setShopWeek} leftovers={leftovers}/>}
+          {tab === 'health' &&
+            <HealthView supplements={supplements} toggleSupplement={toggleSupplement}/>}
+          {tab === 'recipes' &&
+            <RecipesView customRecs={customRecs} allRecipes={allRecipes}
+                         addCustomRecipe={addCustomRecipe} deleteCustomRecipe={deleteCustomRecipe} toast={toast}/>}
         </div>
 
-        {/* ── Mobile Bottom-Navigation ── */}
         <nav className="bottom-nav" aria-label="Hauptnavigation">
           <div className="bottom-nav-inner">
             {navItems.map(({ k, icon, label }) => (
-              <button
-                key={k}
-                type="button"
-                className={tab === k ? 'active' : ''}
-                onClick={() => setTab(k)}
-              >
+              <button key={k} type="button" className={tab === k ? 'active' : ''} onClick={() => setTab(k)}>
                 <span className="nav-icon">{icon}</span>
                 <span>{label}</span>
               </button>
@@ -682,22 +751,22 @@
           </div>
         </nav>
 
-        {modal && <MealModal modal={modal} onClose={() => setModal(null)} allRecipes={allRecipes} updatePlanDay={updatePlanDay} batchMode={batchMode} applyBatch={applyBatch} toast={toast}/>}
+        {modal && <MealModal modal={modal} onClose={() => setModal(null)} allRecipes={allRecipes}
+                             updatePlanDay={updatePlanDay} batchMode={batchMode} applyBatch={applyBatch} toast={toast}/>}
         {snack  && <Snackbar msg={snack} onClose={() => setSnack(null)}/>}
       </div>
     );
   }
 
   // ── DASHBOARD ─────────────────────────────────────────────────────────────
-  function Dashboard({ macros, todayM, plan, todayKey, toggleEaten, supplements, toggleSupplement }) {
+  function Dashboard({ macros, todayM, plan, todayKey, toggleEaten, supplements, toggleSupplement,
+                       todayWorkout, workoutDone, activityBonus, toggleWorkoutDone }) {
     const today     = new Date();
     const todayPlan = plan[todayKey];
 
-    // Wochenfortschritt (Mo–So der aktuellen Woche)
     const wDays = Array.from({length:7}, (_, i) => {
       const d = new Date(today); const dow = d.getDay();
-      d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1) + i);
-      return dk(d);
+      d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1) + i); return dk(d);
     });
     const wEaten = wDays.reduce((a, k) => {
       const d = plan[k]; if (!d) return a;
@@ -705,6 +774,9 @@
       return a;
     }, 0);
     const wTotal = wDays.reduce((a, k) => a + (plan[k] ? 3 : 0), 0);
+
+    // Effektives Kalorienziel = Grundziel + Aktivitäts-Bonus
+    const effectiveKcal = macros.kcal + activityBonus;
 
     function SuppBtn({ field, label, icon }) {
       const key  = todayKey + '_' + field;
@@ -729,26 +801,59 @@
           </p>
         </div>
 
-        {/* Makros */}
+        {/* Aktivitäts-Bonus Card */}
+        {todayWorkout && (
+          <div style={{ marginBottom:'.9rem' }}>
+            <div className="activity-bonus">
+              <div style={{ fontSize:'2rem', lineHeight:1 }}>
+                {todayWorkout.id === 'rest' ? '😴' : '🏋️'}
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontWeight:600, fontSize:'.88rem', color:'var(--sport)' }}>
+                  Heutiges Training: {todayWorkout.name}
+                </div>
+                <div style={{ fontSize:'.76rem', color:'var(--txt3)', marginTop:'2px' }}>
+                  {workoutDone
+                    ? `✅ Erledigt! +${activityBonus} kcal Aktivitäts-Bonus verrechnet`
+                    : `🔥 ${todayWorkout.kcalBurn} kcal Bonus nach dem Training`}
+                </div>
+              </div>
+              <div>
+                <button type="button"
+                        className={`btn btn-sm ${workoutDone ? 'btn-secondary' : 'btn-sport'}`}
+                        onClick={() => toggleWorkoutDone(todayKey)}>
+                  {workoutDone ? '↩ Rückgängig' : '✓ Fertig'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Makros – mit optionalem Bonus */}
         <div className="card">
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'.85rem', flexWrap:'wrap', gap:'8px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
               <div style={{ width:38, height:38, borderRadius:'50%', background:'var(--teal)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'1.1rem', flexShrink:0 }}>♂</div>
               <div>
                 <div style={{ fontWeight:600, fontSize:'.88rem' }}>Heutige Makros</div>
-                <div style={{ fontSize:'.7rem', color:'var(--txt3)' }}>Ziel {macros.kcal} kcal · P {macros.pp}% · C {macros.cp}% · F {macros.fp}%</div>
+                <div style={{ fontSize:'.7rem', color:'var(--txt3)' }}>
+                  Ziel {macros.kcal} kcal
+                  {activityBonus > 0 && <span style={{ color:'var(--sport)', fontWeight:600 }}> +{activityBonus} Sport</span>}
+                  {' '}= <strong>{effectiveKcal}</strong> kcal gesamt
+                </div>
               </div>
             </div>
             <div style={{ display:'flex', gap:'4px', flexWrap:'wrap' }}>
               <span className="badge badge-teal">P {macros.pp}%</span>
               <span className="badge badge-blue">C {macros.cp}%</span>
               <span className="badge badge-amber">F {macros.fp}%</span>
+              {activityBonus > 0 && <span className="badge badge-sport">🏋️ +{activityBonus}</span>}
             </div>
           </div>
-          <ProgressBar label="Kalorien"      value={todayM.kcal}    max={macros.kcal}    unit=" kcal" color="var(--teal)"/>
-          <ProgressBar label="Protein"       value={todayM.protein}  max={macros.protein}             color="var(--teal)"/>
-          <ProgressBar label="Kohlenhydrate" value={todayM.carbs}    max={macros.carbs}               color="var(--navy-l)"/>
-          <ProgressBar label="Fett"          value={todayM.fat}      max={macros.fat}                 color="var(--amber)"/>
+          <ProgressBar label="Kalorien"      value={todayM.kcal}   max={effectiveKcal} unit=" kcal" color="var(--teal)"/>
+          <ProgressBar label="Protein"       value={todayM.protein} max={macros.protein}             color="var(--teal)"/>
+          <ProgressBar label="Kohlenhydrate" value={todayM.carbs}   max={macros.carbs}               color="var(--navy-l)"/>
+          <ProgressBar label="Fett"          value={todayM.fat}     max={macros.fat}                 color="var(--amber)"/>
           <div style={{ marginTop:'.6rem', display:'flex', alignItems:'center', gap:'8px' }}>
             <div style={{ flex:1, height:6, background:'var(--cream2)', borderRadius:3, overflow:'hidden' }}>
               <div style={{ width:(wTotal > 0 ? wEaten/wTotal*100 : 0)+'%', height:'100%', background:'var(--green)', borderRadius:3, transition:'width .5s ease' }}/>
@@ -763,9 +868,9 @@
             <h3 style={{ marginBottom:'.9rem', fontWeight:400 }}>Heute essen</h3>
             <div className="g3">
               {['breakfast','lunch','dinner'].map(m => {
-                const r     = todayPlan[m]; if (!r) return null;
+                const r = todayPlan[m]; if (!r) return null;
                 const eaten = todayPlan.eaten[m] || false;
-                const lbl   = { breakfast:'🌅 Frühstück', lunch:'☀️ Mittag', dinner:'🌙 Abend' }[m];
+                const lbl = { breakfast:'🌅 Frühstück', lunch:'☀️ Mittag', dinner:'🌙 Abend' }[m];
                 return (
                   <div key={m} className={`csm meal-card ${eaten ? 'eaten' : ''}`}
                        style={{ border: eaten ? '2px solid var(--green)' : '1px solid var(--cream3)' }}
@@ -776,9 +881,6 @@
                       <span className="rm rm-p">{r.macros.protein}g P</span>
                       <span className="rm rm-c">{r.macros.carbs}g C</span>
                       <span className="rm rm-k">{r.macros.kcal} kcal</span>
-                    </div>
-                    <div style={{ display:'flex', gap:'3px', flexWrap:'wrap', marginBottom:'7px' }}>
-                      {r.tags?.slice(0,2).map(t => <TagBadge key={t} tag={t}/>)}
                     </div>
                     <div style={{ display:'flex', alignItems:'center', gap:'5px' }}>
                       <div className={`check-box ${eaten ? 'checked' : ''}`} style={{ width:17, height:17, borderRadius:5 }}/>
@@ -802,20 +904,20 @@
         <div className="card">
           <h3 style={{ marginBottom:'.7rem', fontWeight:400 }}>⚡ Tägliche Supplements</h3>
           <div className="g3">
-            <SuppBtn field="mg"   label="Kreatin 5g"   icon="💪"/>
-            <SuppBtn field="k"    label="Vitamin D3+K2" icon="☀️"/>
-            <SuppBtn field="salt" label="B12 / Omega-3" icon="💊"/>
+            <SuppBtn field="mg"   label="Kreatin 5g"    icon="💪"/>
+            <SuppBtn field="k"    label="Vitamin D3+K2"  icon="☀️"/>
+            <SuppBtn field="salt" label="B12 / Omega-3"  icon="💊"/>
           </div>
         </div>
 
-        {/* Makroziel-Kacheln */}
+        {/* Makroziele */}
         <div className="cardf">
           <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'6px' }} className="g2m">
             {[
-              ['Kalorien',  macros.kcal+'kcal', 'Aufbauziel',   'var(--teal)'],
-              ['Protein',   macros.protein+'g',  macros.pp+'%',  'var(--teal)'],
-              ['Carbs',     macros.carbs+'g',    macros.cp+'%',  'var(--navy-l)'],
-              ['Fett',      macros.fat+'g',      macros.fp+'%',  'var(--amber)'],
+              ['Kalorien',  effectiveKcal+'kcal', activityBonus > 0 ? '+Sport' : 'Aufbauziel', 'var(--teal)'],
+              ['Protein',   macros.protein+'g',   macros.pp+'%',                               'var(--teal)'],
+              ['Carbs',     macros.carbs+'g',     macros.cp+'%',                               'var(--navy-l)'],
+              ['Fett',      macros.fat+'g',       macros.fp+'%',                               'var(--amber)'],
             ].map(([l,v,s,c]) => (
               <div key={l} style={{ background:'#fff', borderRadius:'10px', padding:'8px 10px', border:'1px solid var(--cream3)' }}>
                 <div style={{ fontSize:'.66rem', color:'var(--txt3)' }}>{l}</div>
@@ -825,32 +927,176 @@
             ))}
           </div>
           <p style={{ fontSize:'.73rem', color:'var(--txt3)', marginTop:'8px', lineHeight:1.5 }}>
-            Ziel: Muskelaufbau 85 → 88-90 kg · 1,7 g Protein/kg · Low-GI · PCOS-freundlich · +250 kcal Überschuss
+            Ziel: Muskelaufbau 85→88-90 kg · 1,7 g Protein/kg · Low-GI · PCOS-freundlich · +250 kcal Überschuss
           </p>
         </div>
       </div>
     );
   }
 
+  // ── SPORT VIEW ────────────────────────────────────────────────────────────
+  function SportView({ plan, sportWeek, setSportWeek, toggleWorkoutDone, shiftWorkout, todayKey }) {
+    const days     = weekDates(sportWeek);
+    const today    = new Date();
+
+    const PHASE_INFO = {
+      1: { label:'Phase 1 – Wiederaufbau',  sub:'Woche 1-2: 2 Sätze (~30 Min)', cls:'phase-1', icon:'🌱' },
+      2: { label:'Phase 2 – Aufbau',        sub:'Woche 3-4: 3 Sätze (~60 Min)', cls:'phase-2', icon:'💪' },
+      3: { label:'Phase 3 – Intensivierung',sub:'Woche 5-6: 4 Sätze (~90 Min)', cls:'phase-3', icon:'🔥' },
+    };
+    const todayPhase = getTrainingPhase(today);
+    const phaseInfo  = PHASE_INFO[todayPhase];
+
+    // Trainingstage der Woche zählen (für Wochen-Übersicht)
+    const weekDone = days.filter(d => plan[dk(d)]?.workout_done && WORKOUTS.find(w => w.id === plan[dk(d)].workout_id)?.id !== 'rest').length;
+
+    return (
+      <div>
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'.9rem', flexWrap:'wrap', gap:'8px' }}>
+          <h2 style={{ fontWeight:400 }}>🏋️ Trainingsplan</h2>
+          <div style={{ display:'flex', gap:'5px', alignItems:'center' }}>
+            <button type="button" className="week-nav-btn" onClick={() => { const d = new Date(sportWeek); d.setDate(d.getDate()-7); setSportWeek(getMonday(d)); }}>‹</button>
+            <span style={{ fontSize:'.82rem', padding:'0 6px' }}>KW {getISOWeek(sportWeek)}</span>
+            <button type="button" className="week-nav-btn" onClick={() => { const d = new Date(sportWeek); d.setDate(d.getDate()+7); setSportWeek(getMonday(d)); }}>›</button>
+          </div>
+        </div>
+
+        {/* Phase-Banner */}
+        <div className={`week-phase-banner ${phaseInfo.cls}`}>
+          <span style={{ fontSize:'1.5rem' }}>{phaseInfo.icon}</span>
+          <div>
+            <div style={{ fontWeight:600, fontSize:'.88rem' }}>{phaseInfo.label}</div>
+            <div style={{ fontSize:'.76rem', color:'var(--txt2)' }}>{phaseInfo.sub}</div>
+          </div>
+          <div style={{ marginLeft:'auto', textAlign:'right' }}>
+            <div style={{ fontWeight:600, fontSize:'.88rem' }}>{weekDone}/3</div>
+            <div style={{ fontSize:'.72rem', color:'var(--txt3)' }}>Training diese Woche</div>
+          </div>
+        </div>
+
+        {/* PPL-Schema Legende */}
+        <div className="sstrip" style={{ marginBottom:'.9rem' }}>
+          <div style={{ fontWeight:600, fontSize:'.82rem', marginBottom:'4px' }}>Push-Pull-Legs Split</div>
+          <div style={{ display:'flex', gap:'6px', flexWrap:'wrap', fontSize:'.76rem', color:'var(--txt2)' }}>
+            <span>💪 <strong>Mo</strong> = Push (Brust/Schulter/Trizeps)</span>
+            <span>🔄 <strong>Mi</strong> = Pull (Rücken/Bizeps)</span>
+            <span>🦵 <strong>Fr</strong> = Legs (Beine/Bauch)</span>
+            <span>😴 <strong>Di/Do/Sa/So</strong> = Regeneration</span>
+          </div>
+        </div>
+
+        {/* Wochentage */}
+        {days.map(d => {
+          const dateK      = dk(d);
+          const dayPlan    = plan[dateK];
+          if (!dayPlan) return null;
+          const workout    = WORKOUTS.find(w => w.id === dayPlan.workout_id) || WORKOUTS.find(w => w.id === 'rest');
+          const isRest     = workout.id === 'rest';
+          const isDone     = !!dayPlan.workout_done;
+          const isToday    = dateK === todayKey;
+          const phase      = getTrainingPhase(d);
+          const exercises  = adjustedExercises(workout, phase);
+          const phaseLabel = { 1:'2 Sätze', 2:'3 Sätze', 3:'4 Sätze' }[phase];
+          const phaseClass = { 1:'week12', 2:'', 3:'week56' }[phase];
+
+          return (
+            <div key={dateK} className={`workout-card ${isDone ? 'done' : ''} ${isRest ? 'rest-day' : ''}`}
+                 style={{ border: isToday ? `2px solid ${isRest ? 'var(--cream3)' : 'var(--sport)'}` : undefined }}>
+
+              {/* Header */}
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'.7rem', flexWrap:'wrap', gap:'8px' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+                  <div style={{ width:36, height:36, borderRadius:'10px', background: isRest ? 'var(--cream2)' : 'var(--sport-p)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.1rem', flexShrink:0 }}>
+                    {isRest ? '😴' : workout.id === 'ppl_push' ? '💪' : workout.id === 'ppl_pull' ? '🔄' : '🦵'}
+                  </div>
+                  <div>
+                    <div style={{ display:'flex', alignItems:'center', gap:'6px', flexWrap:'wrap' }}>
+                      <span style={{ fontWeight:600, fontSize:'.9rem' }}>
+                        {DAYS[d.getDay() === 0 ? 6 : d.getDay()-1]}, {d.getDate()}. {MONTHS[d.getMonth()]}
+                      </span>
+                      {isToday && <span className="badge badge-teal">Heute</span>}
+                      {isDone  && <span className="badge badge-green">✓ Erledigt</span>}
+                    </div>
+                    <div style={{ fontSize:'.8rem', color:'var(--txt2)', marginTop:'1px' }}>{workout.name}</div>
+                  </div>
+                </div>
+                <div style={{ display:'flex', gap:'6px', alignItems:'center', flexWrap:'wrap' }}>
+                  {!isRest && <span className={`sets-badge ${phaseClass}`}>{phaseLabel}</span>}
+                  {!isRest && !isDone && (
+                    <button type="button" className="btn btn-sm btn-secondary"
+                            onClick={() => shiftWorkout(dateK)}
+                            title="Workout auf morgen verschieben">
+                      📅 Morgen
+                    </button>
+                  )}
+                  {!isRest && (
+                    <button type="button"
+                            className={`btn btn-sm ${isDone ? 'btn-secondary' : 'btn-sport'}`}
+                            onClick={() => toggleWorkoutDone(dateK)}>
+                      {isDone ? '↩' : '✓ Fertig'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Übungen */}
+              {!isRest && (
+                <div>
+                  {exercises.map((ex, i) => (
+                    <div key={i} className="exercise-row">
+                      <div className="exercise-num">{i+1}</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontWeight:500, fontSize:'.84rem' }}>{ex.name}</div>
+                        <div style={{ fontSize:'.76rem', color:'var(--txt3)', marginTop:'2px' }}>{ex.note}</div>
+                      </div>
+                      <div style={{ textAlign:'right', flexShrink:0 }}>
+                        <div style={{ fontWeight:600, fontSize:'.82rem', color:'var(--sport)' }}>{ex.sets}×{ex.reps}</div>
+                        <div style={{ fontSize:'.68rem', color:'var(--txt3)' }}>Sätze×Wdh</div>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'.75rem', paddingTop:'.6rem', borderTop:'1px solid var(--cream2)' }}>
+                    <span style={{ fontSize:'.76rem', color:'var(--txt3)' }}>
+                      🔥 {workout.kcalBurn} kcal verbrannt · {workout.type}
+                    </span>
+                    <span style={{ fontSize:'.76rem', color:'var(--txt3)' }}>
+                      ⏱ ca. {phase === 1 ? '30' : phase === 2 ? '60' : '90'} Min
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {isRest && (
+                <div style={{ fontSize:'.82rem', color:'var(--txt3)', padding:'.3rem 0' }}>
+                  Aktive Erholung: lockeres Spazieren, Mobilität, Stretching.
+                  Kein intensives Training. Lass deinen Körper regenerieren.
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
   // ── KALENDER ──────────────────────────────────────────────────────────────
-  function CalendarView({ plan, updatePlanDay, curWeek, setCurWeek, toggleEaten, batchMode, setBatchMode, applyBatch, allRecipes, leftovers, toast, setModal }) {
+  function CalendarView({ plan, updatePlanDay, curWeek, setCurWeek, toggleEaten, batchMode,
+                          setBatchMode, applyBatch, allRecipes, leftovers, toast, setModal }) {
     const days    = weekDates(curWeek);
     const dragRef = useRef(null);
     const [dragOver, setDragOver] = useState(null);
     const todayKey = dk(new Date());
 
-    function prev() { const d = new Date(curWeek); d.setDate(d.getDate() - 7); setCurWeek(getMonday(d)); }
-    function next() { const d = new Date(curWeek); d.setDate(d.getDate() + 7); setCurWeek(getMonday(d)); }
+    function prev() { const d = new Date(curWeek); d.setDate(d.getDate()-7); setCurWeek(getMonday(d)); }
+    function next() { const d = new Date(curWeek); d.setDate(d.getDate()+7); setCurWeek(getMonday(d)); }
 
     function onDragStart(e, dateK, meal) { dragRef.current = { dateK, meal }; e.dataTransfer.effectAllowed = 'move'; }
     function onDrop(tDateK, tMeal) {
       if (!dragRef.current) return;
       const { dateK, meal } = dragRef.current;
       if (dateK === tDateK && meal === tMeal) { dragRef.current = null; setDragOver(null); return; }
-      const src = plan[dateK]?.[meal];
-      const tgt = plan[tDateK]?.[tMeal];
-      updatePlanDay(dateK,  { [meal]:  tgt });
-      updatePlanDay(tDateK, { [tMeal]: src });
+      const src = plan[dateK]?.[meal]; const tgt = plan[tDateK]?.[tMeal];
+      updatePlanDay(dateK, { [meal]: tgt }); updatePlanDay(tDateK, { [tMeal]: src });
       toast('🔄 Mahlzeiten getauscht!');
       dragRef.current = null; setDragOver(null);
     }
@@ -885,12 +1131,20 @@
             const dateK   = dk(d);
             const day     = plan[dateK];
             const isToday = dateK === todayKey;
+            // Workout-Indikator im Kalender
+            const wout    = day ? WORKOUTS.find(w => w.id === day.workout_id) : null;
+            const wDone   = !!day?.workout_done;
             return (
-              <div key={dateK} className="day-col"
-                   style={{ border: isToday ? '2px solid var(--teal)' : '1px solid var(--cream3)', opacity: day ? 1 : .45 }}>
+              <div key={dateK} className="day-col" style={{ border: isToday ? '2px solid var(--teal)' : '1px solid var(--cream3)', opacity: day ? 1 : .45 }}>
                 <div className="day-header" style={{ background: isToday ? 'var(--teal)' : 'var(--navy)' }}>
-                  {DAYS[d.getDay() === 0 ? 6 : d.getDay() - 1]} {d.getDate()}.
+                  {DAYS[d.getDay() === 0 ? 6 : d.getDay()-1]} {d.getDate()}.
                 </div>
+                {/* Sport-Indikator */}
+                {wout && wout.id !== 'rest' && (
+                  <div style={{ background: wDone ? 'var(--green-p)' : 'var(--sport-p)', padding:'2px 4px', fontSize:'.55rem', color: wDone ? '#1a4a28' : 'var(--sport)', textAlign:'center', borderBottom:'1px solid var(--cream2)' }}>
+                    {wDone ? '✓ ' : ''}{wout.id === 'ppl_push' ? '💪' : wout.id === 'ppl_pull' ? '🔄' : '🦵'}
+                  </div>
+                )}
                 <div style={{ padding:'3px', display:'flex', flexDirection:'column', gap:'3px' }}>
                   {day ? ['breakfast','lunch','dinner'].map(m => {
                     const r     = day[m];
@@ -911,7 +1165,7 @@
                         <div style={{ fontSize:'.59rem', fontWeight:500, lineHeight:1.25, color: eaten ? 'var(--green)' : 'var(--txt)' }}>{r?.name || '–'}</div>
                         {r && <div style={{ display:'flex', gap:'2px', marginTop:'2px' }}>
                           <span style={{ fontSize:'.5rem', background:'var(--teal-p)', color:'#1a5a50', borderRadius:'3px', padding:'1px 3px' }}>{r.macros.protein}p</span>
-                          <span style={{ fontSize:'.5rem', background:'#dbeafe',       color:'#1e40af', borderRadius:'3px', padding:'1px 3px' }}>{r.macros.carbs}c</span>
+                          <span style={{ fontSize:'.5rem', background:'#dbeafe', color:'#1e40af', borderRadius:'3px', padding:'1px 3px' }}>{r.macros.carbs}c</span>
                         </div>}
                         <div style={{ display:'flex', gap:'3px', marginTop:'3px', alignItems:'center' }}>
                           <div onClick={e => { e.stopPropagation(); toggleEaten(dateK, m); }}
@@ -934,21 +1188,19 @@
           })}
         </div>
         <p style={{ fontSize:'.73rem', color:'var(--txt3)', marginTop:'8px' }}>
-          💡 Drag &amp; Drop zum Tauschen · Klick = Rezeptdetails · 🌸 = PCOS-freundlich
+          💡 Drag &amp; Drop zum Tauschen · Klick = Rezeptdetails · 🌸 = PCOS · 💪🔄🦵 = Training
         </p>
       </div>
     );
   }
 
-  // ── MEAL-MODAL ────────────────────────────────────────────────────────────
+  // ── MEAL MODAL ────────────────────────────────────────────────────────────
   function MealModal({ modal, onClose, allRecipes, updatePlanDay, batchMode, applyBatch, toast }) {
     const { dateK, meal, recipe: r } = modal;
     const [swapOpen, setSwapOpen] = useState(false);
     const mLabel   = { breakfast:'Frühstück', lunch:'Mittagessen', dinner:'Abendessen' }[meal];
     const sameType = allRecipes.filter(x => x.type === meal && x.id !== r?.id);
-
     function swap(nr) { updatePlanDay(dateK, { [meal]: nr }); toast(`✏️ Ersetzt: ${nr.name}`); onClose(); }
-
     return (
       <div className="modal-overlay" onClick={onClose}>
         <div className="modal" onClick={e => e.stopPropagation()}>
@@ -960,7 +1212,6 @@
             </div>
             <button type="button" className="btn btn-secondary btn-sm" onClick={onClose}>✕</button>
           </div>
-
           {r && <>
             <div style={{ display:'flex', gap:'5px', flexWrap:'wrap', marginBottom:'.8rem' }}>
               <span className="rm rm-p">{r.macros.protein}g P</span>
@@ -989,7 +1240,6 @@
               </button>
             )}
           </>}
-
           <hr className="divl"/>
           <button type="button" className="btn btn-secondary" style={{ width:'100%', marginBottom:'8px' }} onClick={() => setSwapOpen(s => !s)}>
             🔄 Anderes Rezept wählen {swapOpen ? '▲' : '▼'}
@@ -1018,20 +1268,20 @@
 
   // ── EINKAUFSLISTE ─────────────────────────────────────────────────────────
   function ShoppingView({ shoppingList, shopWeek, setShopWeek, leftovers }) {
-    const [checked,  setChecked]  = useState({});
-    const [hide,     setHide]     = useState(false);
-    const [search,   setSearch]   = useState('');
-    const [manual,   setManual]   = useState([]);
-    const [manInp,   setManInp]   = useState('');
+    const [checked, setChecked] = useState({});
+    const [hide,    setHide]    = useState(false);
+    const [search,  setSearch]  = useState('');
+    const [manual,  setManual]  = useState([]);
+    const [manInp,  setManInp]  = useState('');
 
     const catMap = {
-      Gemüse:       ['zucchini','brokkoli','spinat','paprika','aubergine','tomate','karotte','gurke','erbsen','avocado','süßkartoffel','frühlingszwiebeln','rucola','sellerie','kürbis','blumenkohl','spargel','champignon'],
-      Eiweiß:       ['eier','tofu','tempeh','halloumi','mozzarella','parmesan','feta','ricotta','hüttenkäse','skyr','quark','camembert','lupinen','paneer'],
-      Getreide:     ['haferflocken','quinoa','reis','nudeln','tortilla','couscous','bulgur','vollkornbrot','kräcker'],
+      Gemüse:['zucchini','brokkoli','spinat','paprika','aubergine','tomate','karotte','gurke','erbsen','avocado','süßkartoffel','frühlingszwiebeln','rucola','sellerie','kürbis','blumenkohl','spargel','champignon'],
+      Eiweiß:['eier','tofu','tempeh','halloumi','mozzarella','parmesan','feta','ricotta','hüttenkäse','skyr','quark','camembert','lupinen','paneer'],
+      Getreide:['haferflocken','quinoa','reis','nudeln','tortilla','couscous','bulgur','vollkornbrot','kräcker'],
       Hülsenfrüchte:['linsen','kichererbsen','bohnen','edamame','sojaschnetzel','sojahack'],
       Milchprodukte:['joghurt','milch','hafermilch','mandelmilch','kokosmilch','frischkäse','butter'],
-      Nüsse:        ['walnüsse','erdnussmus','chiasamen','leinsamen','sesam','hanfsamen','mandelmus','tahini','mandeln','pinienkerne'],
-      Gewürze:      ['salz','pfeffer','kurkuma','cumin','koriander','paprikapulver','oregano','thymian','zimt','ingwer','knoblauch','chili','currypaste','tamari','sesamöl','olivenöl','zitrone','limette','honig','ahornsirup','vanille','reisessig','miso'],
+      Nüsse:['walnüsse','erdnussmus','chiasamen','leinsamen','sesam','hanfsamen','mandelmus','tahini','mandeln','pinienkerne'],
+      Gewürze:['salz','pfeffer','kurkuma','cumin','koriander','paprikapulver','oregano','thymian','zimt','ingwer','knoblauch','chili','currypaste','tamari','sesamöl','olivenöl','zitrone','limette','honig','ahornsirup','vanille','reisessig','miso'],
     };
 
     const allItems = [...shoppingList, ...manual.map(m => [m, 1])];
@@ -1059,21 +1309,18 @@
             <button type="button" className="btn btn-secondary btn-sm" onClick={() => { const d = new Date(shopWeek); d.setDate(d.getDate()+7); setShopWeek(getMonday(d)); }}>›</button>
           </div>
         </div>
-
         <div className="card" style={{ marginBottom:'.75rem' }}>
           <div style={{ display:'flex', gap:'8px' }}>
             <input placeholder="Eigenes Produkt hinzufügen…" value={manInp} onChange={e => setManInp(e.target.value)} onKeyDown={e => e.key==='Enter' && addManual()} style={{ flex:1 }}/>
             <button type="button" className="btn btn-primary btn-sm" onClick={addManual}>+ Hinzu</button>
           </div>
         </div>
-
         <div style={{ display:'flex', gap:'7px', marginBottom:'.9rem', alignItems:'center', flexWrap:'wrap' }}>
           <input placeholder="Suche…" value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth:200 }}/>
           <span className="badge badge-teal">{done}/{filtered.length} ✓</span>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setHide(h => !h)}>{hide ? 'Alle zeigen' : 'Erledigte ausblenden'}</button>
           <button type="button" className="btn btn-secondary btn-sm" onClick={() => setChecked({})}>Reset</button>
         </div>
-
         {leftovers.length > 0 && (
           <div className="leftover-card" style={{ marginBottom:'.9rem' }}>
             <div style={{ fontWeight:500, fontSize:'.8rem' }}>♻️ Reste nutzen – nicht extra kaufen:</div>
@@ -1082,7 +1329,6 @@
             </div>
           </div>
         )}
-
         <div className="g2">
           {Object.entries(cats).filter(([,items]) => items.length > 0).map(([cat, items]) => (
             <div key={cat} className="card">
@@ -1103,34 +1349,31 @@
 
   // ── HEALTH VIEW ───────────────────────────────────────────────────────────
   function HealthView({ supplements, toggleSupplement }) {
-    const today   = new Date();
-    const todayK  = dk(today);
-    const weekD   = Array.from({length:7}, (_, i) => {
-      const d = new Date(today); d.setDate(d.getDate() - 6 + i);
-      return { date:d, k:dk(d), label: DAYS[d.getDay() === 0 ? 6 : d.getDay() - 1] };
+    const today  = new Date();
+    const todayK = dk(today);
+    const weekD  = Array.from({length:7}, (_, i) => {
+      const d = new Date(today); d.setDate(d.getDate()-6+i);
+      return { date:d, k:dk(d), label: DAYS[d.getDay() === 0 ? 6 : d.getDay()-1] };
     });
 
     const muscleCards = [
-      { icon:'💪', name:'Kreatin Monohydrat',   dose:'5 g täglich',        bg:'var(--teal-p)',  detail:'Erhöht Kraftleistung und Muskelmasse nachweislich. Täglich 5 g, keine Ladephase nötig. Bei gesunden Nieren völlig unbedenklich.' },
-      { icon:'🥛', name:'Protein-Timing',        dose:'25–40 g nach Training', bg:'var(--teal-p)', detail:'Nach dem Training 25–40 g Protein aufnehmen – optimiert die Muskelproteinsynthese. Quark, Skyr, Tofu oder Hülsenfrüchte eignen sich ideal.' },
-      { icon:'😴', name:'Schlaf & Regeneration', dose:'7–9 Stunden',        bg:'var(--green-p)', detail:'Der wichtigste Muskelaufbau-Faktor: Im Tiefschlaf wird Wachstumshormon ausgeschüttet. Konstanter Schlafrhythmus ist entscheidend.' },
-      { icon:'💧', name:'Hydrierung',            dose:'2,5–3,5 L täglich',  bg:'#dbeafe',        detail:'Ausreichend Wasser verbessert Trainingsleistung und Proteinverwertung spürbar. Vor jeder Mahlzeit 1 Glas trinken hilft auch beim Sättigungsgefühl.' },
+      { icon:'💪', name:'Kreatin Monohydrat',    dose:'5 g täglich',           bg:'var(--teal-p)',  detail:'Erhöht Kraftleistung und Muskelmasse nachweislich. Täglich 5 g, keine Ladephase nötig. Bei gesunden Nieren völlig unbedenklich.' },
+      { icon:'🥛', name:'Protein-Timing',         dose:'25–40 g nach Training', bg:'var(--teal-p)',  detail:'Nach dem Training 25–40 g Protein aufnehmen – optimiert die Muskelproteinsynthese. Quark, Skyr, Tofu oder Hülsenfrüchte eignen sich ideal.' },
+      { icon:'😴', name:'Schlaf & Regeneration',  dose:'7–9 Stunden',           bg:'var(--green-p)', detail:'Der wichtigste Muskelaufbau-Faktor: Im Tiefschlaf wird Wachstumshormon ausgeschüttet. Konstanter Schlafrhythmus ist entscheidend.' },
+      { icon:'💧', name:'Hydrierung',             dose:'2,5–3,5 L täglich',     bg:'#dbeafe',        detail:'Ausreichend Wasser verbessert Trainingsleistung und Proteinverwertung spürbar. Vor jeder Mahlzeit 1 Glas trinken hilft auch beim Sättigungsgefühl.' },
     ];
-
     const pcosCards = [
-      { icon:'🌸', name:'Low-GI Kohlenhydrate',   detail:'Vollkornprodukte, Hülsenfrüchte und Gemüse statt Weißmehl und Zucker. Stabilisiert den Blutzucker und reduziert Insulinresistenz – das Kernproblem bei PCOS.' },
-      { icon:'🫘', name:'Hülsenfrüchte täglich',   detail:'Linsen, Kichererbsen, Bohnen: pflanzliches Protein, Ballaststoffe, Magnesium. Unterstützen Hormonbalance, Darmgesundheit und Blutfettwerte.' },
-      { icon:'🐟', name:'Omega-3 täglich',          detail:'Leinöl, Walnüsse und Algenöl reduzieren Entzündungen. Bei PCOS sind Entzündungsmarker oft erhöht. Täglich 2–3 g EPA+DHA anstreben.' },
-      { icon:'🚫', name:'Kein Zucker & Weißmehl',  detail:'Raffinierter Zucker verstärkt Insulinresistenz massiv. Keine Süßigkeiten, kein Weißbrot, kein Fruchtsaft. Natürliche Süße aus Beeren ist in Ordnung.' },
-      { icon:'🔋', name:'Magnesium & Zink',         detail:'Beide Mineralstoffe bei PCOS häufig mangelhaft. Magnesium 300–400 mg verbessert Insulinsensitivität. Zink 10–15 mg unterstützt die Hormonsynthese.' },
-      { icon:'☀️', name:'Vitamin D3 + K2',          detail:'Enger Zusammenhang zwischen Vitamin-D-Mangel und PCOS. 2000–4000 IE D3 täglich, immer mit K2 (100 µg) kombinieren. Blutwert prüfen lassen.' },
+      { icon:'🌸', name:'Low-GI Kohlenhydrate',  detail:'Vollkornprodukte, Hülsenfrüchte und Gemüse statt Weißmehl und Zucker. Stabilisiert den Blutzucker und reduziert Insulinresistenz – das Kernproblem bei PCOS.' },
+      { icon:'🫘', name:'Hülsenfrüchte täglich', detail:'Linsen, Kichererbsen, Bohnen: pflanzliches Protein, Ballaststoffe, Magnesium. Unterstützen Hormonbalance, Darmgesundheit und Blutfettwerte.' },
+      { icon:'🐟', name:'Omega-3 täglich',        detail:'Leinöl, Walnüsse und Algenöl reduzieren Entzündungen. Bei PCOS sind Entzündungsmarker oft erhöht. Täglich 2–3 g EPA+DHA anstreben.' },
+      { icon:'🚫', name:'Kein Zucker & Weißmehl',detail:'Raffinierter Zucker verstärkt Insulinresistenz massiv. Keine Süßigkeiten, kein Weißbrot, kein Fruchtsaft. Natürliche Süße aus Beeren ist in Ordnung.' },
+      { icon:'🔋', name:'Magnesium & Zink',       detail:'Beide Mineralstoffe bei PCOS häufig mangelhaft. Magnesium 300–400 mg verbessert Insulinsensitivität. Zink 10–15 mg unterstützt die Hormonsynthese.' },
+      { icon:'☀️', name:'Vitamin D3 + K2',        detail:'Enger Zusammenhang zwischen Vitamin-D-Mangel und PCOS. 2000–4000 IE D3 täglich, immer mit K2 (100 µg) kombinieren. Blutwert prüfen lassen.' },
     ];
 
     return (
       <div>
         <h2 style={{ marginBottom:'1.35rem', fontWeight:400 }}>🩺 Gesundheits-Guide</h2>
-
-        {/* Muskelaufbau */}
         <div className="card">
           <h3 style={{ marginBottom:'.85rem', fontWeight:400 }}>💪 Muskelaufbau – Ernährungsbasics</h3>
           <div className="g2">
@@ -1156,7 +1399,6 @@
           </div>
         </div>
 
-        {/* PCOS-Grundlagen */}
         <div className="card">
           <h3 style={{ marginBottom:'.85rem', fontWeight:400 }}>🌸 PCOS-Ernährungs-Basics</h3>
           <div className="pstrip" style={{ marginBottom:'.9rem' }}>
@@ -1179,7 +1421,6 @@
           </div>
         </div>
 
-        {/* Supplement-Wochenübersicht */}
         <div className="card">
           <h3 style={{ marginBottom:'.4rem', fontWeight:400 }}>💊 Supplement-Wochenübersicht</h3>
           <p style={{ fontSize:'.78rem', color:'var(--txt3)', marginBottom:'1rem' }}>Kreatin, D3+K2, B12/Omega-3 – täglich abhaken</p>
@@ -1190,7 +1431,7 @@
                 {weekD.map(w => <th key={w.k} style={{ padding:'6px 4px', textAlign:'center', fontWeight:500, color: w.k === todayK ? 'var(--teal)' : 'var(--txt3)' }}>{w.label}</th>)}
               </tr></thead>
               <tbody>
-              {[['💪 Kreatin','mg'], ['☀️ D3+K2','k'], ['💊 B12/Ω3','salt']].map(([lbl, field]) => (
+              {[['💪 Kreatin','mg'],['☀️ D3+K2','k'],['💊 B12/Ω3','salt']].map(([lbl, field]) => (
                 <tr key={field}>
                   <td style={{ padding:'6px 4px', fontWeight:500, whiteSpace:'nowrap' }}>{lbl}</td>
                   {weekD.map(w => {
@@ -1210,17 +1451,16 @@
           </div>
         </div>
 
-        {/* Ernährungs-Checkliste */}
         <div className="cardf">
           <h3 style={{ marginBottom:'.85rem', fontWeight:400 }}>✅ Tägliche Ernährungs-Checkliste</h3>
           <div className="g2">
             {[
-              ['🥦','400 g Gemüse täglich',     'Verschiedene Farben – viele Antioxidantien'],
-              ['🫘','Hülsenfrüchte täglich',     'Linsen, Bohnen, Kichererbsen oder Edamame'],
-              ['🌾','Nur Vollkorn',              'Kein Weißmehl, kein Weißbrot, kein weißer Reis'],
-              ['💧','2,5–3,5 L Wasser täglich', 'Vor Mahlzeiten trinken – bessere Sättigung'],
-              ['🚫','Kein freier Zucker',        'Kein Haushaltszucker, kein Saft, keine Süßigkeiten'],
-              ['🥚','Protein auf 4 Mahlzeiten', '25–40 g pro Mahlzeit für optimale Verwertung'],
+              ['🥦','400 g Gemüse täglich',    'Verschiedene Farben – viele Antioxidantien'],
+              ['🫘','Hülsenfrüchte täglich',    'Linsen, Bohnen, Kichererbsen oder Edamame'],
+              ['🌾','Nur Vollkorn',             'Kein Weißmehl, kein Weißbrot, kein weißer Reis'],
+              ['💧','2,5–3,5 L Wasser täglich','Vor Mahlzeiten trinken – bessere Sättigung'],
+              ['🚫','Kein freier Zucker',       'Kein Haushaltszucker, kein Saft, keine Süßigkeiten'],
+              ['🥚','Protein auf 4 Mahlzeiten','25–40 g pro Mahlzeit für optimale Verwertung'],
             ].map(([ic, t, d]) => (
               <div key={t} style={{ background:'#fff', borderRadius:'10px', padding:'.8rem', border:'1px solid var(--cream3)' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'3px' }}>
@@ -1245,12 +1485,11 @@
     const ef = { name:'', type:'breakfast', prepMin:15, kcal:'', carbs:'', protein:'', fat:'', batchDays:1, ingredients:'', steps:'', pcos:true };
     const [form, setForm] = useState(ef);
 
-    function openNew()  { setForm(ef); setEditR(null); setShowForm(true); }
+    function openNew()   { setForm(ef); setEditR(null); setShowForm(true); }
     function openEdit(r) {
       setForm({ name:r.name, type:r.type, prepMin:r.prepMin||15, kcal:r.macros.kcal, carbs:r.macros.carbs, protein:r.macros.protein, fat:r.macros.fat, batchDays:r.batchDays||1, ingredients:(r.ingredients||[]).join('\n'), steps:r.steps||'', pcos:r.tags?.includes('pcos')||false });
       setEditR(r); setShowForm(true);
     }
-
     async function save() {
       if (!form.name || !form.kcal) { toast('⚠️ Name & Kalorien sind Pflichtfelder'); return; }
       const tags = ['eigenes']; if (form.pcos) tags.push('pcos');
@@ -1311,7 +1550,6 @@
             <button key={k} type="button" className={`tab ${filter===k ? 'active' : ''}`} onClick={() => setFilter(k)}>{l}</button>
           ))}
         </div>
-
         <div style={{ display:'flex', gap:'4px', flexWrap:'wrap', marginBottom:'.9rem' }}>
           {[['all','Alle'],['pcos','🌸 PCOS'],['lowgi','📉 Low-GI'],['protein','💪 Protein'],['legumes','🫘 Hülsenf.'],['batch','📦 Batch'],['muskelaufbau','🏋️ Aufbau']].map(([k,l]) => (
             <button key={k} type="button"
@@ -1344,7 +1582,7 @@
               {r.custom && (
                 <div style={{ display:'flex', gap:'5px', marginTop:'4px' }}>
                   <button type="button" className="btn btn-secondary btn-sm" onClick={e => { e.stopPropagation(); openEdit(r); }}>✏️ Bearbeiten</button>
-                  <button type="button" className="btn btn-danger btn-sm"    onClick={e => { e.stopPropagation(); deleteCustomRecipe(r); }}>Löschen</button>
+                  <button type="button" className="btn btn-danger btn-sm" onClick={e => { e.stopPropagation(); deleteCustomRecipe(r); }}>Löschen</button>
                 </div>
               )}
             </div>
@@ -1358,28 +1596,15 @@
 </script>
 
 <script>
-  // PWA Service Worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  }
-  // PWA Manifest (inline)
+  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
   const _manifest = {
-    name: 'VegeProtein – Ernährungsplan',
-    short_name: 'VegeProtein',
-    start_url: '.',
-    display: 'standalone',
-    background_color: '#f4f1ec',
-    theme_color: '#2d4a6e',
-    icons: [{
-      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%232d4a6e'/%3E%3Ctext y='140' font-size='120' text-anchor='middle' x='96'%3E%F0%9F%A5%A6%3C/text%3E%3C/svg%3E",
-      sizes: '192x192',
-      type: 'image/svg+xml'
-    }]
+    name: 'VegeProtein – Ernährungsplan', short_name: 'VegeProtein',
+    start_url: '.', display: 'standalone',
+    background_color: '#f4f1ec', theme_color: '#2d4a6e',
+    icons: [{ src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%232d4a6e'/%3E%3Ctext y='140' font-size='120' text-anchor='middle' x='96'%3E%F0%9F%A5%A6%3C/text%3E%3C/svg%3E", sizes: '192x192', type: 'image/svg+xml' }]
   };
   const _blob = new Blob([JSON.stringify(_manifest)], { type: 'application/json' });
-  const _link = document.createElement('link');
-  _link.rel  = 'manifest';
-  _link.href = URL.createObjectURL(_blob);
+  const _link = document.createElement('link'); _link.rel = 'manifest'; _link.href = URL.createObjectURL(_blob);
   document.head.appendChild(_link);
 </script>
 </body>

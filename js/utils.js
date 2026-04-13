@@ -34,7 +34,8 @@ function addDays(dateStr, n) {
   const d = new Date(dateStr); d.setDate(d.getDate() + n); return dk(d);
 }
 
-const DAYS   = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
+// WICHTIG: Index 0 = Sonntag, weil JavaScript's getDay() mit 0=Sonntag beginnt.
+const DAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
 const MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
 
 // ── PERSON & MAKROS ───────────────────────────────────────────────────────

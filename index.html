@@ -1,18 +1,24 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <!-- Supabase – muss VOR React geladen werden -->
+  <!-- ① Supabase – als erstes, vor allem anderen -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script>
     const SUPABASE_URL = 'https://smzvvpvnbqbeafgboasj.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNtenZ2cHZuYnFiZWFmZ2JvYXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU2NjUzNTQsImV4cCI6MjA5MTI0MTM1NH0.y6pnzwDlfFrlSco4Pohuz6eTvxx7du3UYR_NdO-EXao';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const sb      = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     const USER_ID = 'mein_planer';
   </script>
-  <!-- Externe Datendateien -->
+
+  <!-- ② Datendateien (setzen window.RECIPES / window.WORKOUTS) -->
   <script src="js/recipes.js"></script>
   <script src="js/sportplan.js"></script>
 
+  <!-- ③ Hilfsfunktionen & API (kein JSX → normales script) -->
+  <script src="js/utils.js"></script>
+  <script src="js/api.js"></script>
+
+  <!-- Metadaten -->
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <meta name="theme-color" content="#2d4a6e"/>
@@ -21,516 +27,35 @@
   <meta name="description" content="VegeProtein – Protein-Plus · Low-GI · PCOS-freundlich"/>
   <title>VegeProtein – Dein Plan</title>
 
+  <!-- ④ React + Babel CDN -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- ⑤ Schriften + Stylesheet -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
 
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --navy:     #1a2d4a;  --navy-mid: #2d4a6e;  --navy-l: #3d6490;
-      --teal:     #2a7a6e;  --teal-l:   #3d9e8e;  --teal-p: #e0f4f1;
-      --cream:    #f4f1ec;  --cream2:   #ece8e0;  --cream3: #ddd8ce;
-      --amber:    #c88030;  --amber-l:  #e8a048;
-      --green:    #3a7a4a;  --green-l:  #52a066;  --green-p: #e4f4e8;
-      --purple:   #6a4a8a;  --purple-p: #f0ebf8;
-      --coral:    #c8523a;  --coral-l:  #e87060;  --coral-p: #fce7e2;
-      --red:      #b91c1c;
-      --sport:    #1a4a7a;  --sport-l:  #2a6aaa;  --sport-p: #e0ecf8;
-      --txt:      #1a2420;  --txt2:     #38504a;  --txt3: #6a7d78;
-      --r: 12px;  --rl: 18px;  --nh: 60px;  --bnh: 68px;
-      --sbi: env(safe-area-inset-bottom, 0px);
-    }
-    html, body { height: 100%; }
-    body {
-      font-family: 'DM Sans', sans-serif;
-      background: var(--cream); color: var(--txt);
-      min-height: 100vh; overflow-x: hidden;
-      padding-bottom: calc(var(--bnh) + var(--sbi));
-    }
-    @media (min-width: 641px) { body { padding-bottom: 0; } }
-    h1, h2, h3, h4 { font-family: 'DM Serif Display', serif; }
-
-    /* ── HEADER ── */
-    .app-header {
-      background: var(--navy); padding: 0 1.25rem;
-      display: flex; align-items: center; justify-content: space-between;
-      height: var(--nh); position: sticky; top: 0; z-index: 200;
-      box-shadow: 0 2px 20px rgba(0,0,0,.32);
-    }
-    .logo-wrap { display: flex; align-items: center; gap: 9px; }
-    .logo-dot {
-      width: 28px; height: 28px; background: var(--teal-l); border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .9rem; flex-shrink: 0;
-    }
-    .app-header h1 { font-size: 1.15rem; font-weight: 400; color: var(--cream); line-height: 1; }
-    .app-header .tagline { font-size: .6rem; color: rgba(244,241,236,.48); font-family: 'DM Sans', sans-serif; letter-spacing: .03em; }
-    .desktop-nav { display: flex; gap: 2px; }
-    .desktop-nav button {
-      background: none; border: none; color: rgba(244,241,236,.6);
-      padding: 10px 11px; cursor: pointer; border-radius: 8px;
-      font-size: .76rem; font-family: 'DM Sans', sans-serif; font-weight: 500;
-      transition: all .15s; white-space: nowrap; min-height: 44px;
-    }
-    .desktop-nav button.active,
-    .desktop-nav button:hover { color: var(--cream); background: rgba(244,241,236,.13); }
-
-    /* ── BOTTOM NAV ── */
-    .bottom-nav {
-      display: none; position: fixed; bottom: 0; left: 0; right: 0;
-      z-index: 200; background: var(--navy);
-      box-shadow: 0 -2px 16px rgba(0,0,0,.28);
-      padding-bottom: var(--sbi);
-    }
-    .bottom-nav-inner { display: flex; height: var(--bnh); }
-    .bottom-nav button {
-      flex: 1; background: none; border: none;
-      color: rgba(244,241,236,.48);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 2px; font-size: .57rem; font-family: 'DM Sans', sans-serif; font-weight: 500;
-      cursor: pointer; padding: 4px 1px; transition: color .15s;
-      -webkit-tap-highlight-color: transparent; touch-action: manipulation; min-width: 44px;
-    }
-    .bottom-nav button .nav-icon { font-size: 1.15rem; line-height: 1; transition: transform .15s; }
-    .bottom-nav button.active { color: var(--teal-l); }
-    .bottom-nav button.active .nav-icon { transform: translateY(-2px); }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 640px) {
-      .desktop-nav { display: none; }
-      .bottom-nav  { display: block; }
-      .main { padding: .9rem .75rem; }
-      .g2, .g3 { grid-template-columns: 1fr; }
-      .g2m { grid-template-columns: 1fr 1fr !important; }
-      .calg { grid-template-columns: repeat(4, 1fr) !important; }
-    }
-    @media (min-width: 641px) and (max-width: 900px) { .g3 { grid-template-columns: 1fr 1fr; } }
-
-    /* ── LAYOUT ── */
-    .main { max-width: 1100px; margin: 0 auto; padding: 1.35rem 1.5rem; }
-    .card  { background: #fff; border-radius: var(--rl); padding: 1.2rem 1.4rem; border: 1px solid var(--cream3); margin-bottom: .9rem; }
-    .cardf { background: var(--cream2); border-radius: var(--rl); padding: 1.15rem 1.35rem; margin-bottom: .9rem; border: 1px solid var(--cream3); }
-    .csm   { background: #fff; border-radius: var(--r); padding: .85rem 1rem; border: 1px solid var(--cream3); }
-    .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; }
-    .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .9rem; }
-    .divl { border: none; border-top: 1px solid var(--cream3); margin: .75rem 0; }
-
-    /* ── BUTTONS ── */
-    .btn {
-      border: none; border-radius: 8px; padding: 8px 14px;
-      font-family: 'DM Sans', sans-serif; font-size: .81rem; font-weight: 500;
-      cursor: pointer; transition: all .15s; touch-action: manipulation; min-height: 38px;
-      display: inline-flex; align-items: center; justify-content: center; gap: 5px;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .btn-primary   { background: var(--teal);  color: #fff; } .btn-primary:hover   { background: var(--teal-l); }
-    .btn-secondary { background: var(--cream2); color: var(--txt); } .btn-secondary:hover { background: var(--cream3); }
-    .btn-amber     { background: var(--amber);  color: #fff; } .btn-amber:hover     { background: var(--amber-l); }
-    .btn-sport     { background: var(--sport);  color: #fff; } .btn-sport:hover     { background: var(--sport-l); }
-    .btn-success   { background: var(--green);  color: #fff; } .btn-success:hover   { background: var(--green-l); }
-    .btn-sm   { padding: 5px 9px; font-size: .73rem; min-height: 30px; }
-    .btn-danger { background: #fef2f2; color: var(--red); border: 1px solid #fecaca; }
-
-    /* ── PROGRESS ── */
-    .progress-bar  { height: 9px; background: var(--cream2); border-radius: 5px; overflow: hidden; margin: 4px 0; }
-    .progress-fill { height: 100%; border-radius: 5px; transition: width .5s ease; }
-
-    /* ── BADGES ── */
-    .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-size: .69rem; font-weight: 500; line-height: 1.4; }
-    .badge-teal   { background: var(--teal-p);   color: #1a5a50; }
-    .badge-green  { background: var(--green-p);  color: #1a4a28; }
-    .badge-amber  { background: #fef3c7; color: #92400e; }
-    .badge-red    { background: #fee2e2; color: #991b1b; }
-    .badge-blue   { background: #dbeafe; color: #1e40af; }
-    .badge-purple { background: var(--purple-p); color: #4a1a7a; }
-    .badge-coral  { background: var(--coral-p);  color: #8a2a18; }
-    .badge-sport  { background: var(--sport-p);  color: #1a3a6a; }
-
-    /* ── FORMS ── */
-    input, select, textarea {
-      font-family: 'DM Sans', sans-serif; border: 1px solid var(--cream3); border-radius: 8px;
-      padding: 9px 12px; font-size: .87rem; width: 100%; background: #fff; color: var(--txt);
-      outline: none; transition: border-color .18s;
-    }
-    input:focus, select:focus, textarea:focus { border-color: var(--teal-l); box-shadow: 0 0 0 3px rgba(42,122,110,.1); }
-    label { font-size: .78rem; font-weight: 500; color: var(--txt2); display: block; margin-bottom: 3px; }
-    .form-group { margin-bottom: .85rem; }
-    .tag { display: inline-flex; align-items: center; background: var(--cream2); border-radius: 6px; padding: 2px 7px; font-size: .71rem; color: var(--txt2); margin: 2px; }
-
-    /* ── MEAL & WORKOUT CARDS ── */
-    .meal-card {
-      border: 1.5px solid var(--cream3); border-radius: var(--r);
-      padding: .65rem; cursor: pointer; transition: all .15s;
-      background: #fff; position: relative; touch-action: manipulation;
-    }
-    .meal-card:hover { border-color: var(--teal-l); box-shadow: 0 2px 10px rgba(42,122,110,.1); }
-    .meal-card.eaten { border-color: var(--green); background: var(--green-p); }
-    .meal-card.drag-active { border-color: var(--teal-l) !important; background: var(--teal-p) !important; }
-
-    /* ── SPORT-SPEZIFISCH ── */
-    .workout-card {
-      border-radius: var(--rl); padding: 1.2rem 1.4rem;
-      border: 1.5px solid var(--sport-p); background: #fff; margin-bottom: .9rem;
-      transition: all .15s;
-    }
-    .workout-card.done { border-color: var(--green); background: var(--green-p); }
-    .workout-card.rest-day { border-color: var(--cream3); background: var(--cream2); }
-    .exercise-row {
-      display: flex; align-items: flex-start; gap: 10px;
-      padding: .6rem 0; border-bottom: 1px solid var(--cream2);
-    }
-    .exercise-row:last-child { border-bottom: none; }
-    .exercise-num {
-      width: 22px; height: 22px; border-radius: 50%;
-      background: var(--sport-p); color: var(--sport);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .7rem; font-weight: 700; flex-shrink: 0; margin-top: 1px;
-    }
-    .sets-badge {
-      display: inline-flex; align-items: center; justify-content: center;
-      padding: 2px 8px; border-radius: 6px; font-size: .72rem; font-weight: 600;
-      background: var(--sport-p); color: var(--sport); white-space: nowrap;
-    }
-    .sets-badge.week12 { background: var(--green-p); color: #1a4a28; }
-    .sets-badge.week56 { background: var(--coral-p); color: #8a2a18; }
-    .week-phase-banner {
-      border-radius: var(--r); padding: .75rem 1rem; margin-bottom: .9rem;
-      display: flex; align-items: center; gap: 10px;
-    }
-    .phase-1 { background: var(--green-p); border: 1.5px solid var(--green); }
-    .phase-2 { background: var(--teal-p);  border: 1.5px solid var(--teal); }
-    .phase-3 { background: var(--coral-p); border: 1.5px solid var(--coral); }
-    .activity-bonus {
-      background: linear-gradient(135deg, var(--sport-p) 0%, var(--teal-p) 100%);
-      border: 1.5px solid var(--sport-l); border-radius: var(--r);
-      padding: .85rem 1rem; display: flex; align-items: center; gap: 12px;
-    }
-
-    /* ── KALENDER ── */
-    .day-header { background: var(--navy); color: var(--cream); padding: 5px 3px; border-radius: var(--r) var(--r) 0 0; font-size: .7rem; font-weight: 500; text-align: center; }
-    .day-col { border-radius: var(--r); overflow: hidden; border: 1px solid var(--cream3); }
-
-    /* ── CHECKBOX ── */
-    .check-box {
-      width: 20px; height: 20px; border-radius: 5px; border: 2px solid var(--cream3);
-      cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: all .15s; flex-shrink: 0; touch-action: manipulation;
-    }
-    .check-box.checked { background: var(--teal); border-color: var(--teal); }
-    .check-box.checked::after { content: '✓'; color: #fff; font-size: .76rem; font-weight: 700; }
-
-    /* ── TABS ── */
-    .tabs { display: flex; gap: 2px; background: var(--cream2); border-radius: 10px; padding: 3px; margin-bottom: .9rem; }
-    .tab {
-      flex: 1; text-align: center; padding: 7px 3px; border-radius: 8px; cursor: pointer;
-      font-size: .77rem; font-weight: 500; color: var(--txt3); transition: all .15s;
-      border: none; background: none; font-family: 'DM Sans', sans-serif; min-height: 36px;
-      touch-action: manipulation;
-    }
-    .tab.active { background: #fff; color: var(--txt); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
-
-    /* ── SHOPPING ── */
-    .shopping-item { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--cream2); }
-    .shopping-item:last-child { border-bottom: none; }
-
-    /* ── MODAL ── */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,.48);
-      z-index: 300; display: flex; align-items: flex-end; justify-content: center;
-    }
-    @media (min-width: 641px) { .modal-overlay { align-items: center; padding: 1rem; } }
-    .modal { background: #fff; border-radius: var(--rl) var(--rl) 0 0; padding: 1.35rem; width: 100%; max-height: 92vh; overflow-y: auto; }
-    @media (min-width: 641px) { .modal { border-radius: var(--rl); max-width: 600px; } }
-    .modal-drag { width: 36px; height: 4px; background: var(--cream3); border-radius: 2px; margin: 0 auto .9rem; display: block; }
-
-    /* ── TOAST ── */
-    .snack {
-      position: fixed; bottom: calc(var(--bnh) + var(--sbi) + 10px);
-      left: 1rem; right: 1rem; background: var(--navy); color: var(--cream);
-      padding: 11px 16px; border-radius: 10px; font-size: .81rem;
-      z-index: 400; animation: slideIn .25s ease;
-      box-shadow: 0 4px 18px rgba(0,0,0,.22); text-align: center;
-    }
-    @media (min-width: 641px) { .snack { left: auto; bottom: 1.5rem; right: 1.5rem; text-align: left; max-width: 340px; } }
-    @keyframes slideIn { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    /* ── MAKRO-ZEILEN ── */
-    .macro-row   { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-    .macro-label { font-size: .73rem; color: var(--txt3); width: 84px; flex-shrink: 0; }
-    .macro-value { font-size: .73rem; font-weight: 500; width: 92px; text-align: right; flex-shrink: 0; }
-
-    /* ── SUPPLEMENT-BUTTON ── */
-    .suppl-btn { display: flex; align-items: center; gap: 10px; padding: 10px 11px; border-radius: 10px; cursor: pointer; transition: all .15s; border: 1.5px solid var(--cream3); background: #fff; touch-action: manipulation; }
-    .suppl-btn.done { border-color: var(--teal-l); background: var(--teal-p); }
-
-    /* ── LEFTOVER-KARTE ── */
-    .leftover-card { background: #fffcf0; border: 1.5px dashed var(--amber); border-radius: var(--r); padding: .9rem; margin-bottom: .75rem; }
-
-    /* ── REZEPT-MAKRO-CHIPS ── */
-    .rm { display: inline-flex; align-items: center; padding: 2px 6px; border-radius: 5px; font-size: .7rem; font-weight: 600; }
-    .rm-p { background: var(--teal-p); color: #1a5a50; }
-    .rm-c { background: #dbeafe; color: #1e40af; }
-    .rm-f { background: #fef3c7; color: #92400e; }
-    .rm-k { background: var(--purple-p); color: #4a1a7a; }
-
-    /* ── INFO-STREIFEN ── */
-    .istrip { background: var(--teal-p);   border-left: 4px solid var(--teal);   border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
-    .gstrip { background: var(--green-p);  border-left: 4px solid var(--green);  border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
-    .pstrip { background: var(--purple-p); border-left: 4px solid var(--purple); border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
-    .sstrip { background: var(--sport-p);  border-left: 4px solid var(--sport);  border-radius: 0 var(--r) var(--r) 0; padding: .7rem .95rem; margin-bottom: .5rem; }
-
-    /* ── WOCHEN-NAVIGATION ── */
-    .week-nav { display: flex; align-items: center; gap: .5rem; }
-    .week-nav-btn { background: #fff; border: 1px solid var(--cream3); border-radius: 8px; width: 34px; height: 34px; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all .15s; touch-action: manipulation; }
-    .week-nav-btn:hover { border-color: var(--teal-l); }
-
-    /* ── LOADER ── */
-    .loading-overlay { position: fixed; inset: 0; background: var(--cream); z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .9rem; }
-    .spinner { width: 34px; height: 34px; border: 3px solid var(--cream3); border-top-color: var(--teal); border-radius: 50%; animation: spin .7s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+  <!-- ⑥ JSX-Komponenten in der richtigen Reihenfolge
+       Alle mit type="text/babel", damit Babel sie transpiliert.
+       Babel verarbeitet synchron alle text/babel-Scripts im <head>
+       bevor das DOM gerendert wird. -->
+  <script type="text/babel" src="js/components.jsx"></script>
+  <script type="text/babel" src="js/views-food.jsx"></script>
+  <script type="text/babel" src="js/views-health-sport.jsx"></script>
 </head>
 <body>
 <div id="root"></div>
 
+<!-- ⑦ App-Root + ReactDOM.render (type="text/babel" wegen JSX) -->
 <script type="text/babel">
-  const { useState, useEffect, useCallback, useRef, useMemo } = React;
+  const { useState, useEffect, useCallback, useMemo } = React;
 
+  // Globale Datenarrays aus den externen Datendateien
   const RECIPES  = window.RECIPES  || [];
   const WORKOUTS = window.WORKOUTS || [];
 
-  // ── PLAN-START & SPORT-KONSTANTEN ─────────────────────────────────────────
-  const PLAN_START = new Date(2026, 3, 13); // Mo 13. April 2026
-
-  // PPL-Schema: 0=So,1=Mo,2=Di,3=Mi,4=Do,5=Fr,6=Sa
-  // Mo=Push, Mi=Pull, Fr=Legs, sonst Rest
-  const DOW_TO_WORKOUT = {
-    1: 'ppl_push',  // Montag
-    3: 'ppl_pull',  // Mittwoch
-    5: 'ppl_legs',  // Freitag
-  };
-
-  /** Liefert das Basis-Workout für ein bestimmtes Datum (ohne Verschiebungen). */
-  function baseWorkoutForDate(dateObj) {
-    const dow = dateObj.getDay(); // 0=So … 6=Sa
-    const wid = DOW_TO_WORKOUT[dow];
-    return WORKOUTS.find(w => w.id === (wid || 'rest')) || WORKOUTS.find(w => w.id === 'rest');
-  }
-
-  /**
-   * Berechnet die Trainings-Phase basierend auf dem Plan-Startdatum.
-   * Woche 1-2 → phase 1 (2 Sätze)
-   * Woche 3-4 → phase 2 (Original)
-   * Woche 5-6 → phase 3 (+1 Satz)
-   */
-  function getTrainingPhase(dateObj) {
-    const msPerDay = 86400000;
-    const daysDiff = Math.floor((dateObj - PLAN_START) / msPerDay);
-    if (daysDiff < 0)  return 2; // vor Plan-Start → Original
-    const week = Math.floor(daysDiff / 7) + 1;
-    if (week <= 2) return 1;
-    if (week <= 4) return 2;
-    return 3;
-  }
-
-  /** Passt die Sätze eines Workouts an die Phase an. */
-  function adjustedExercises(workout, phase) {
-    return workout.exercises.map(ex => {
-      let sets = ex.sets;
-      if (phase === 1) sets = Math.min(sets, 2);
-      if (phase === 3) sets = sets + 1;
-      return { ...ex, sets };
-    });
-  }
-
-  // ── PERSON & MAKROS ───────────────────────────────────────────────────────
-  const PERSON = { gender: 'm', height: 190, weight: 85, age: 35, goalKg: 89 };
-
-  function calcMacros(p) {
-    const bmr = 88.362 + 13.397 * p.weight + 4.799 * p.height - 5.677 * p.age;
-    const target = Math.round(bmr * 1.55) + 250;
-    const protein = Math.round(p.weight * 1.7);
-    const carbs   = Math.round(target * 0.35 / 4);
-    const fat     = Math.round((target - protein * 4 - carbs * 4) / 9);
-    const pp = Math.round(protein * 4 / target * 100);
-    const cp = Math.round(carbs   * 4 / target * 100);
-    const fp = 100 - pp - cp;
-    return { kcal: target, protein, carbs, fat, pp, cp, fp };
-  }
-
-  // ── PLAN BUILDER ──────────────────────────────────────────────────────────
-  function buildWeekPlan() {
-    const plan = {};
-    const bf = RECIPES.filter(r => r.type === 'breakfast');
-    const lu = RECIPES.filter(r => r.type === 'lunch');
-    const di = RECIPES.filter(r => r.type === 'dinner');
-    if (!bf.length || !lu.length || !di.length) { console.error('RECIPES fehlt'); return plan; }
-    for (let week = 0; week < 6; week++) {
-      for (let day = 0; day < 7; day++) {
-        const d = new Date(PLAN_START);
-        d.setDate(d.getDate() + week * 7 + day);
-        const key = dk(d);
-        plan[key] = {
-          breakfast: bf[(week * 7 + day)     % bf.length],
-          lunch:     lu[(week * 7 + day + 2) % lu.length],
-          dinner:    di[(week * 7 + day + 5) % di.length],
-          eaten:        { breakfast: false, lunch: false, dinner: false },
-          workout_id:   baseWorkoutForDate(d).id,  // Standard-Zuweisung
-          workout_done: false,
-        };
-      }
-    }
-    return plan;
-  }
-
-  // ── HELPERS ───────────────────────────────────────────────────────────────
-  function dk(d)  { return d instanceof Date ? d.toISOString().slice(0, 10) : d; }
-  function fmt(v) { return typeof v === 'number' ? Math.round(v) : v; }
-  function getMonday(d) {
-    const c = new Date(d), day = c.getDay(), diff = c.getDate() - day + (day === 0 ? -6 : 1);
-    c.setDate(diff); c.setHours(0, 0, 0, 0); return c;
-  }
-  function weekDates(mon) { return Array.from({length:7}, (_, i) => { const d = new Date(mon); d.setDate(d.getDate() + i); return d; }); }
-  function getISOWeek(d) {
-    const dt = new Date(d); dt.setHours(0,0,0,0);
-    dt.setDate(dt.getDate() + 3 - (dt.getDay() + 6) % 7);
-    const w1 = new Date(dt.getFullYear(), 0, 4);
-    return 1 + Math.round(((dt - w1) / 86400000 - 3 + (w1.getDay() + 6) % 7) / 7);
-  }
-  function addDays(dateStr, n) {
-    const d = new Date(dateStr); d.setDate(d.getDate() + n); return dk(d);
-  }
-  const DAYS   = ['Mo','Di','Mi','Do','Fr','Sa','So'];
-  const MONTHS = ['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'];
-  const DAY_FULL = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
-
-  // ── SUPABASE ──────────────────────────────────────────────────────────────
-  async function dbLoadPlan() {
-    try {
-      const { data, error } = await sb.from('calendar_days').select('*').eq('user_id', USER_ID);
-      if (error || !data || !data.length) return null;
-      const plan = buildWeekPlan();
-      data.forEach(row => {
-        const key = (row.date_key || '').slice(0, 10);
-        if (!key || !plan[key]) return;
-        plan[key].eaten = {
-          breakfast: !!row.eaten?.breakfast,
-          lunch:     !!row.eaten?.lunch,
-          dinner:    !!row.eaten?.dinner,
-        };
-        plan[key].workout_done = !!row.workout_done;
-        if (row.workout_id) plan[key].workout_id = row.workout_id;
-        ['breakfast','lunch','dinner'].forEach(m => {
-          const rid = row[m + '_id'];
-          if (rid) { const r = RECIPES.find(x => x.id === rid); if (r) plan[key][m] = r; }
-        });
-      });
-      return plan;
-    } catch(e) { console.warn('dbLoadPlan:', e); return null; }
-  }
-
-  async function dbSaveDay(key, day) {
-    try {
-      await sb.from('calendar_days').upsert({
-        user_id:      USER_ID,
-        date_key:     key,
-        breakfast_id: day.breakfast?.id || null,
-        lunch_id:     day.lunch?.id     || null,
-        dinner_id:    day.dinner?.id    || null,
-        eaten:        { breakfast: !!day.eaten?.breakfast, lunch: !!day.eaten?.lunch, dinner: !!day.eaten?.dinner },
-        workout_id:   day.workout_id   || null,
-        workout_done: !!day.workout_done,
-      }, { onConflict: 'user_id,date_key' });
-    } catch(e) { console.warn('dbSaveDay:', e); }
-  }
-
-  async function dbLoadSupplements() {
-    try {
-      const { data } = await sb.from('electrolytes').select('*').eq('user_id', USER_ID);
-      if (!data) return {};
-      const obj = {};
-      data.forEach(r => {
-        const k = (r.date_key || '').slice(0, 10);
-        obj[k + '_mg'] = !!r.magnesium; obj[k + '_k'] = !!r.kalium; obj[k + '_salt'] = !!r.natrium;
-      });
-      return obj;
-    } catch(e) { return {}; }
-  }
-
-  async function dbSaveSupplement(dateKey, field, value) {
-    try {
-      const map = { mg: 'magnesium', k: 'kalium', salt: 'natrium' };
-      await sb.from('electrolytes').upsert(
-        { user_id: USER_ID, date_key: dateKey, [map[field]]: value },
-        { onConflict: 'user_id,date_key' }
-      );
-    } catch(e) { console.warn('dbSaveSupplement:', e); }
-  }
-
-  async function dbLoadCustomRecipes() {
-    try {
-      const { data } = await sb.from('custom_recipes').select('*').eq('user_id', USER_ID);
-      if (!data) return [];
-      return data.map(r => ({ ...r.recipe_data, id: 'c' + r.id, supabase_id: r.id, custom: true }));
-    } catch(e) { return []; }
-  }
-  async function dbSaveCustomRecipe(recipe) {
-    try {
-      const { data } = await sb.from('custom_recipes').insert({ user_id: USER_ID, recipe_data: recipe }).select().single();
-      return data ? ('c' + data.id) : recipe.id;
-    } catch(e) { return recipe.id; }
-  }
-  async function dbDeleteCustomRecipe(supabaseId) {
-    try { await sb.from('custom_recipes').delete().eq('id', supabaseId).eq('user_id', USER_ID); }
-    catch(e) {}
-  }
-
-  // ── SHARED UI ─────────────────────────────────────────────────────────────
-  function ProgressBar({ value, max, color = 'var(--teal)', label, unit = 'g' }) {
-    const pct  = Math.min(100, max > 0 ? (value / max) * 100 : 0);
-    const over = value > max * 1.05;
-    return (
-      <div className="macro-row">
-        <span className="macro-label">{label}</span>
-        <div className="progress-bar" style={{flex:1}}>
-          <div className="progress-fill" style={{ width: pct + '%', background: over ? '#ef4444' : color }}/>
-        </div>
-        <span className="macro-value" style={{ color: over ? '#c04444' : 'var(--txt2)' }}>
-          {fmt(value)}/{max}{unit}
-        </span>
-      </div>
-    );
-  }
-
-  function Snackbar({ msg, onClose }) {
-    useEffect(() => { const t = setTimeout(onClose, 3200); return () => clearTimeout(t); }, []);
-    return <div className="snack">{msg}</div>;
-  }
-
-  function LoadingScreen() {
-    return (
-      <div className="loading-overlay">
-        <div className="spinner"/>
-        <p style={{ color: 'var(--txt3)', fontSize: '.88rem' }}>Daten werden geladen…</p>
-      </div>
-    );
-  }
-
-  const TAG_COLORS = {
-    pcos: ['badge-purple','🌸 PCOS'], lowgi: ['badge-green','📉 Low-GI'],
-    protein: ['badge-teal','💪 Protein'], legumes: ['badge-amber','🫘 Hülsenf.'],
-    batch: ['badge-blue','📦 Batch'], schnell: ['badge-teal','⚡ Schnell'],
-    prep: ['badge-blue','🌙 Prep'], vegan: ['badge-green','🌱 Vegan'],
-    muskelaufbau: ['badge-coral','🏋️ Aufbau'],
-  };
-  function TagBadge({ tag }) {
-    const [cls, lbl] = TAG_COLORS[tag] || ['badge-amber', tag];
-    return <span className={`badge ${cls}`}>{lbl}</span>;
-  }
-
-  // ── APP ───────────────────────────────────────────────────────────────────
+  // ── APP ────────────────────────────────────────────────────────────────
   function App() {
     const [loading,     setLoading]     = useState(true);
     const [tab,         setTab]         = useState('dashboard');
@@ -547,10 +72,13 @@
     const macros     = useMemo(() => calcMacros(PERSON), []);
     const allRecipes = useMemo(() => [...RECIPES, ...customRecs], [customRecs]);
 
+    // ── Initialer Supabase-Load ──
     useEffect(() => {
       (async () => {
         const [planData, supplData, recData] = await Promise.all([
-          dbLoadPlan(), dbLoadSupplements(), dbLoadCustomRecipes(),
+          dbLoadPlan(),
+          dbLoadSupplements(),
+          dbLoadCustomRecipes(),
         ]);
         setPlan(planData || buildWeekPlan());
         setSupplements(supplData || {});
@@ -559,19 +87,22 @@
       })();
     }, []);
 
-    const toast      = useCallback(msg => setSnack(msg), []);
-    const todayKey   = dk(new Date());
+    const toast    = useCallback(msg => setSnack(msg), []);
+    const todayKey = dk(new Date());
 
+    // ── Makros des Tages berechnen ──
     function dayMacros(dateK) {
       const day = plan[dateK];
       if (!day) return { kcal:0, carbs:0, protein:0, fat:0 };
       const t = { kcal:0, carbs:0, protein:0, fat:0 };
       ['breakfast','lunch','dinner'].forEach(m => {
-        if (day.eaten[m] && day[m]) Object.keys(t).forEach(k => t[k] += (day[m].macros[k] || 0));
+        if (day.eaten[m] && day[m])
+          Object.keys(t).forEach(k => t[k] += (day[m].macros[k] || 0));
       });
       return t;
     }
 
+    // ── Mahlzeiten-Aktionen ──
     async function toggleEaten(dateK, meal) {
       setPlan(prev => {
         const np = { ...prev, [dateK]: { ...prev[dateK], eaten: { ...prev[dateK].eaten } } };
@@ -589,6 +120,24 @@
       });
     }
 
+    function applyBatch(dateK, meal, recipe) {
+      setPlan(prev => {
+        const np   = { ...prev };
+        const days = Object.keys(np).sort();
+        const idx  = days.indexOf(dateK);
+        const n    = recipe.batchDays || 1;
+        for (let i = 0; i < n && idx + i < days.length; i++) {
+          const d = { ...np[days[idx + i]] };
+          d[meal] = recipe;
+          np[days[idx + i]] = d;
+          dbSaveDay(days[idx + i], d);
+        }
+        return np;
+      });
+      toast(`📦 "${recipe.name}" für ${recipe.batchDays || 1} Tage eingeplant!`);
+    }
+
+    // ── Sport-Aktionen ──
     async function toggleWorkoutDone(dateK) {
       setPlan(prev => {
         const np = { ...prev, [dateK]: { ...prev[dateK], workout_done: !prev[dateK].workout_done } };
@@ -598,17 +147,15 @@
     }
 
     /**
-     * Verschiebt ein Workout auf den Folgetag.
-     * Die PPL-Reihenfolge wird dabei bewahrt: alle folgenden Trainingstage
-     * der Woche rücken um einen Tag nach hinten.
+     * Verschiebt workout_id zwischen dateK und dem Folgetag (Tausch).
+     * So bleibt die PPL-Reihenfolge erhalten.
      */
     function shiftWorkout(dateK) {
       const nextKey = addDays(dateK, 1);
       setPlan(prev => {
         if (!prev[nextKey]) { toast('⚠️ Kein Folgetag im Plan vorhanden.'); return prev; }
         const np = { ...prev };
-        // Tausche workout_id zwischen heute und morgen
-        const todayWid  = np[dateK].workout_id;
+        const todayWid   = np[dateK].workout_id;
         const tomorrowWid = np[nextKey].workout_id;
         np[dateK]   = { ...np[dateK],   workout_id: tomorrowWid };
         np[nextKey] = { ...np[nextKey], workout_id: todayWid    };
@@ -619,6 +166,7 @@
       toast('📅 Workout auf morgen verschoben!');
     }
 
+    // ── Supplement-Aktionen ──
     async function toggleSupplement(dateK, field) {
       const key = dateK + '_' + field;
       const nv  = !(supplements[key] || false);
@@ -626,6 +174,7 @@
       await dbSaveSupplement(dateK, field, nv);
     }
 
+    // ── Eigene Rezepte ──
     async function addCustomRecipe(recipe) {
       const nid = await dbSaveCustomRecipe(recipe);
       setCustomRecs(r => [...r, { ...recipe, id: nid, custom: true }]);
@@ -637,21 +186,7 @@
       toast('🗑 Rezept gelöscht');
     }
 
-    function applyBatch(dateK, meal, recipe) {
-      setPlan(prev => {
-        const np   = { ...prev };
-        const days = Object.keys(np).sort();
-        const idx  = days.indexOf(dateK);
-        const n    = recipe.batchDays || 1;
-        for (let i = 0; i < n && idx + i < days.length; i++) {
-          const d = { ...np[days[idx + i]] }; d[meal] = recipe;
-          np[days[idx + i]] = d; dbSaveDay(days[idx + i], d);
-        }
-        return np;
-      });
-      toast(`📦 "${recipe.name}" für ${recipe.batchDays || 1} Tage eingeplant!`);
-    }
-
+    // ── Abgeleitete Werte ──
     const leftovers = useMemo(() => {
       const counts = {};
       weekDates(curWeek).forEach(d => {
@@ -680,6 +215,7 @@
       return Object.entries(items).sort((a,b) => a[0].localeCompare(b[0]));
     }, [plan, shopWeek]);
 
+    // ── Navigation ──
     const navItems = [
       { k:'dashboard', icon:'🏠', label:'Start'      },
       { k:'sport',     icon:'🏋️', label:'Sport'      },
@@ -691,15 +227,17 @@
 
     if (loading) return <LoadingScreen/>;
 
-    const todayM       = dayMacros(todayKey);
-    const todayDay     = plan[todayKey];
-    const todayWorkout = todayDay ? WORKOUTS.find(w => w.id === todayDay.workout_id) || WORKOUTS.find(w => w.id === 'rest') : null;
-    const workoutDone  = !!todayDay?.workout_done;
-    // Aktivitäts-Bonus: verbannte Kalorien des heutigen Workouts (nur wenn erledigt)
+    const todayM        = dayMacros(todayKey);
+    const todayDay      = plan[todayKey];
+    const todayWorkout  = todayDay
+      ? WORKOUTS.find(w => w.id === todayDay.workout_id) || WORKOUTS.find(w => w.id === 'rest')
+      : null;
+    const workoutDone   = !!todayDay?.workout_done;
     const activityBonus = (workoutDone && todayWorkout) ? todayWorkout.kcalBurn : 0;
 
     return (
       <div>
+        {/* ── Header ── */}
         <header className="app-header">
           <div className="logo-wrap">
             <div className="logo-dot">🥦</div>
@@ -717,33 +255,52 @@
           </nav>
         </header>
 
+        {/* ── Hauptinhalt ── */}
         <div className="main">
           {tab === 'dashboard' &&
-            <Dashboard macros={macros} todayM={todayM} plan={plan} todayKey={todayKey}
-                       toggleEaten={toggleEaten} supplements={supplements} toggleSupplement={toggleSupplement}
-                       todayWorkout={todayWorkout} workoutDone={workoutDone} activityBonus={activityBonus}
-                       toggleWorkoutDone={toggleWorkoutDone}/>}
+            <Dashboard
+              macros={macros} todayM={todayM} plan={plan} todayKey={todayKey}
+              toggleEaten={toggleEaten} supplements={supplements}
+              toggleSupplement={toggleSupplement}
+              todayWorkout={todayWorkout} workoutDone={workoutDone}
+              activityBonus={activityBonus} toggleWorkoutDone={toggleWorkoutDone}/>}
+
           {tab === 'sport' &&
-            <SportView plan={plan} sportWeek={sportWeek} setSportWeek={setSportWeek}
-                       toggleWorkoutDone={toggleWorkoutDone} shiftWorkout={shiftWorkout} todayKey={todayKey}/>}
+            <SportView
+              plan={plan} sportWeek={sportWeek} setSportWeek={setSportWeek}
+              toggleWorkoutDone={toggleWorkoutDone} shiftWorkout={shiftWorkout}
+              todayKey={todayKey}/>}
+
           {tab === 'calendar' &&
-            <CalendarView plan={plan} updatePlanDay={updatePlanDay} curWeek={curWeek}
-                          setCurWeek={setCurWeek} toggleEaten={toggleEaten} batchMode={batchMode}
-                          setBatchMode={setBatchMode} applyBatch={applyBatch} allRecipes={allRecipes}
-                          leftovers={leftovers} toast={toast} setModal={setModal}/>}
+            <CalendarView
+              plan={plan} updatePlanDay={updatePlanDay} curWeek={curWeek}
+              setCurWeek={setCurWeek} toggleEaten={toggleEaten}
+              batchMode={batchMode} setBatchMode={setBatchMode}
+              applyBatch={applyBatch} allRecipes={allRecipes}
+              leftovers={leftovers} toast={toast} setModal={setModal}/>}
+
           {tab === 'shopping' &&
-            <ShoppingView shoppingList={shoppingList} shopWeek={shopWeek} setShopWeek={setShopWeek} leftovers={leftovers}/>}
+            <ShoppingView
+              shoppingList={shoppingList} shopWeek={shopWeek}
+              setShopWeek={setShopWeek} leftovers={leftovers}/>}
+
           {tab === 'health' &&
             <HealthView supplements={supplements} toggleSupplement={toggleSupplement}/>}
+
           {tab === 'recipes' &&
-            <RecipesView customRecs={customRecs} allRecipes={allRecipes}
-                         addCustomRecipe={addCustomRecipe} deleteCustomRecipe={deleteCustomRecipe} toast={toast}/>}
+            <RecipesView
+              customRecs={customRecs} allRecipes={allRecipes}
+              addCustomRecipe={addCustomRecipe}
+              deleteCustomRecipe={deleteCustomRecipe} toast={toast}/>}
         </div>
 
+        {/* ── Mobile Bottom-Navigation ── */}
         <nav className="bottom-nav" aria-label="Hauptnavigation">
           <div className="bottom-nav-inner">
             {navItems.map(({ k, icon, label }) => (
-              <button key={k} type="button" className={tab === k ? 'active' : ''} onClick={() => setTab(k)}>
+              <button key={k} type="button"
+                      className={tab === k ? 'active' : ''}
+                      onClick={() => setTab(k)}>
                 <span className="nav-icon">{icon}</span>
                 <span>{label}</span>
               </button>
@@ -751,843 +308,13 @@
           </div>
         </nav>
 
-        {modal && <MealModal modal={modal} onClose={() => setModal(null)} allRecipes={allRecipes}
-                             updatePlanDay={updatePlanDay} batchMode={batchMode} applyBatch={applyBatch} toast={toast}/>}
-        {snack  && <Snackbar msg={snack} onClose={() => setSnack(null)}/>}
-      </div>
-    );
-  }
-
-  // ── DASHBOARD ─────────────────────────────────────────────────────────────
-  function Dashboard({ macros, todayM, plan, todayKey, toggleEaten, supplements, toggleSupplement,
-                       todayWorkout, workoutDone, activityBonus, toggleWorkoutDone }) {
-    const today     = new Date();
-    const todayPlan = plan[todayKey];
-
-    const wDays = Array.from({length:7}, (_, i) => {
-      const d = new Date(today); const dow = d.getDay();
-      d.setDate(d.getDate() - (dow === 0 ? 6 : dow - 1) + i); return dk(d);
-    });
-    const wEaten = wDays.reduce((a, k) => {
-      const d = plan[k]; if (!d) return a;
-      ['breakfast','lunch','dinner'].forEach(m => { if (d.eaten?.[m]) a++; });
-      return a;
-    }, 0);
-    const wTotal = wDays.reduce((a, k) => a + (plan[k] ? 3 : 0), 0);
-
-    // Effektives Kalorienziel = Grundziel + Aktivitäts-Bonus
-    const effectiveKcal = macros.kcal + activityBonus;
-
-    function SuppBtn({ field, label, icon }) {
-      const key  = todayKey + '_' + field;
-      const done = supplements[key] || false;
-      return (
-        <div className={`suppl-btn ${done ? 'done' : ''}`} onClick={() => toggleSupplement(todayKey, field)}>
-          <div className={`check-box ${done ? 'checked' : ''}`}/>
-          <div>
-            <div style={{ fontWeight:500, fontSize:'.82rem' }}>{icon} {label}</div>
-            <div style={{ fontSize:'.7rem', color:'var(--txt3)' }}>Täglich abhaken</div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div>
-        <div style={{ marginBottom:'1rem' }}>
-          <h2 style={{ fontWeight:400, fontSize:'1.5rem' }}>Guten Tag! 💪</h2>
-          <p style={{ color:'var(--txt3)', fontSize:'.86rem' }}>
-            {today.toLocaleDateString('de-DE', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}
-          </p>
-        </div>
-
-        {/* Aktivitäts-Bonus Card */}
-        {todayWorkout && (
-          <div style={{ marginBottom:'.9rem' }}>
-            <div className="activity-bonus">
-              <div style={{ fontSize:'2rem', lineHeight:1 }}>
-                {todayWorkout.id === 'rest' ? '😴' : '🏋️'}
-              </div>
-              <div style={{ flex:1 }}>
-                <div style={{ fontWeight:600, fontSize:'.88rem', color:'var(--sport)' }}>
-                  Heutiges Training: {todayWorkout.name}
-                </div>
-                <div style={{ fontSize:'.76rem', color:'var(--txt3)', marginTop:'2px' }}>
-                  {workoutDone
-                    ? `✅ Erledigt! +${activityBonus} kcal Aktivitäts-Bonus verrechnet`
-                    : `🔥 ${todayWorkout.kcalBurn} kcal Bonus nach dem Training`}
-                </div>
-              </div>
-              <div>
-                <button type="button"
-                        className={`btn btn-sm ${workoutDone ? 'btn-secondary' : 'btn-sport'}`}
-                        onClick={() => toggleWorkoutDone(todayKey)}>
-                  {workoutDone ? '↩ Rückgängig' : '✓ Fertig'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Makros – mit optionalem Bonus */}
-        <div className="card">
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'.85rem', flexWrap:'wrap', gap:'8px' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-              <div style={{ width:38, height:38, borderRadius:'50%', background:'var(--teal)', display:'flex', alignItems:'center', justifyContent:'center', color:'#fff', fontSize:'1.1rem', flexShrink:0 }}>♂</div>
-              <div>
-                <div style={{ fontWeight:600, fontSize:'.88rem' }}>Heutige Makros</div>
-                <div style={{ fontSize:'.7rem', color:'var(--txt3)' }}>
-                  Ziel {macros.kcal} kcal
-                  {activityBonus > 0 && <span style={{ color:'var(--sport)', fontWeight:600 }}> +{activityBonus} Sport</span>}
-                  {' '}= <strong>{effectiveKcal}</strong> kcal gesamt
-                </div>
-              </div>
-            </div>
-            <div style={{ display:'flex', gap:'4px', flexWrap:'wrap' }}>
-              <span className="badge badge-teal">P {macros.pp}%</span>
-              <span className="badge badge-blue">C {macros.cp}%</span>
-              <span className="badge badge-amber">F {macros.fp}%</span>
-              {activityBonus > 0 && <span className="badge badge-sport">🏋️ +{activityBonus}</span>}
-            </div>
-          </div>
-          <ProgressBar label="Kalorien"      value={todayM.kcal}   max={effectiveKcal} unit=" kcal" color="var(--teal)"/>
-          <ProgressBar label="Protein"       value={todayM.protein} max={macros.protein}             color="var(--teal)"/>
-          <ProgressBar label="Kohlenhydrate" value={todayM.carbs}   max={macros.carbs}               color="var(--navy-l)"/>
-          <ProgressBar label="Fett"          value={todayM.fat}     max={macros.fat}                 color="var(--amber)"/>
-          <div style={{ marginTop:'.6rem', display:'flex', alignItems:'center', gap:'8px' }}>
-            <div style={{ flex:1, height:6, background:'var(--cream2)', borderRadius:3, overflow:'hidden' }}>
-              <div style={{ width:(wTotal > 0 ? wEaten/wTotal*100 : 0)+'%', height:'100%', background:'var(--green)', borderRadius:3, transition:'width .5s ease' }}/>
-            </div>
-            <span style={{ fontSize:'.72rem', color:'var(--txt3)', flexShrink:0 }}>Woche {wEaten}/{wTotal} ✓</span>
-          </div>
-        </div>
-
-        {/* Heute essen */}
-        {todayPlan ? (
-          <div className="card">
-            <h3 style={{ marginBottom:'.9rem', fontWeight:400 }}>Heute essen</h3>
-            <div className="g3">
-              {['breakfast','lunch','dinner'].map(m => {
-                const r = todayPlan[m]; if (!r) return null;
-                const eaten = todayPlan.eaten[m] || false;
-                const lbl = { breakfast:'🌅 Frühstück', lunch:'☀️ Mittag', dinner:'🌙 Abend' }[m];
-                return (
-                  <div key={m} className={`csm meal-card ${eaten ? 'eaten' : ''}`}
-                       style={{ border: eaten ? '2px solid var(--green)' : '1px solid var(--cream3)' }}
-                       onClick={() => toggleEaten(todayKey, m)}>
-                    <div style={{ fontSize:'.68rem', color:'var(--txt3)', marginBottom:'2px' }}>{lbl}</div>
-                    <div style={{ fontWeight:500, fontSize:'.82rem', marginBottom:'5px', lineHeight:1.3 }}>{r.name}</div>
-                    <div style={{ display:'flex', gap:'3px', flexWrap:'wrap', marginBottom:'6px' }}>
-                      <span className="rm rm-p">{r.macros.protein}g P</span>
-                      <span className="rm rm-c">{r.macros.carbs}g C</span>
-                      <span className="rm rm-k">{r.macros.kcal} kcal</span>
-                    </div>
-                    <div style={{ display:'flex', alignItems:'center', gap:'5px' }}>
-                      <div className={`check-box ${eaten ? 'checked' : ''}`} style={{ width:17, height:17, borderRadius:5 }}/>
-                      <span style={{ fontSize:'.7rem', color: eaten ? 'var(--green)' : 'var(--txt3)' }}>
-                        {eaten ? 'Gegessen ✓' : 'Tippen = Abhaken'}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        ) : (
-          <div className="card" style={{ textAlign:'center', color:'var(--txt3)', padding:'2rem 1rem' }}>
-            <div style={{ fontSize:'2rem', marginBottom:'.5rem' }}>📅</div>
-            <div>Kein Plan für heute. Der Plan läuft 13. April – 24. Mai 2026.</div>
-          </div>
-        )}
-
-        {/* Supplement-Check */}
-        <div className="card">
-          <h3 style={{ marginBottom:'.7rem', fontWeight:400 }}>⚡ Tägliche Supplements</h3>
-          <div className="g3">
-            <SuppBtn field="mg"   label="Kreatin 5g"    icon="💪"/>
-            <SuppBtn field="k"    label="Vitamin D3+K2"  icon="☀️"/>
-            <SuppBtn field="salt" label="B12 / Omega-3"  icon="💊"/>
-          </div>
-        </div>
-
-        {/* Makroziele */}
-        <div className="cardf">
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:'6px' }} className="g2m">
-            {[
-              ['Kalorien',  effectiveKcal+'kcal', activityBonus > 0 ? '+Sport' : 'Aufbauziel', 'var(--teal)'],
-              ['Protein',   macros.protein+'g',   macros.pp+'%',                               'var(--teal)'],
-              ['Carbs',     macros.carbs+'g',     macros.cp+'%',                               'var(--navy-l)'],
-              ['Fett',      macros.fat+'g',       macros.fp+'%',                               'var(--amber)'],
-            ].map(([l,v,s,c]) => (
-              <div key={l} style={{ background:'#fff', borderRadius:'10px', padding:'8px 10px', border:'1px solid var(--cream3)' }}>
-                <div style={{ fontSize:'.66rem', color:'var(--txt3)' }}>{l}</div>
-                <div style={{ fontWeight:600, color:c, fontSize:'.95rem', margin:'2px 0' }}>{v}</div>
-                <div style={{ fontSize:'.66rem', color:'var(--txt3)' }}>{s}</div>
-              </div>
-            ))}
-          </div>
-          <p style={{ fontSize:'.73rem', color:'var(--txt3)', marginTop:'8px', lineHeight:1.5 }}>
-            Ziel: Muskelaufbau 85→88-90 kg · 1,7 g Protein/kg · Low-GI · PCOS-freundlich · +250 kcal Überschuss
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // ── SPORT VIEW ────────────────────────────────────────────────────────────
-  function SportView({ plan, sportWeek, setSportWeek, toggleWorkoutDone, shiftWorkout, todayKey }) {
-    const days     = weekDates(sportWeek);
-    const today    = new Date();
-
-    const PHASE_INFO = {
-      1: { label:'Phase 1 – Wiederaufbau',  sub:'Woche 1-2: 2 Sätze (~30 Min)', cls:'phase-1', icon:'🌱' },
-      2: { label:'Phase 2 – Aufbau',        sub:'Woche 3-4: 3 Sätze (~60 Min)', cls:'phase-2', icon:'💪' },
-      3: { label:'Phase 3 – Intensivierung',sub:'Woche 5-6: 4 Sätze (~90 Min)', cls:'phase-3', icon:'🔥' },
-    };
-    const todayPhase = getTrainingPhase(today);
-    const phaseInfo  = PHASE_INFO[todayPhase];
-
-    // Trainingstage der Woche zählen (für Wochen-Übersicht)
-    const weekDone = days.filter(d => plan[dk(d)]?.workout_done && WORKOUTS.find(w => w.id === plan[dk(d)].workout_id)?.id !== 'rest').length;
-
-    return (
-      <div>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'.9rem', flexWrap:'wrap', gap:'8px' }}>
-          <h2 style={{ fontWeight:400 }}>🏋️ Trainingsplan</h2>
-          <div style={{ display:'flex', gap:'5px', alignItems:'center' }}>
-            <button type="button" className="week-nav-btn" onClick={() => { const d = new Date(sportWeek); d.setDate(d.getDate()-7); setSportWeek(getMonday(d)); }}>‹</button>
-            <span style={{ fontSize:'.82rem', padding:'0 6px' }}>KW {getISOWeek(sportWeek)}</span>
-            <button type="button" className="week-nav-btn" onClick={() => { const d = new Date(sportWeek); d.setDate(d.getDate()+7); setSportWeek(getMonday(d)); }}>›</button>
-          </div>
-        </div>
-
-        {/* Phase-Banner */}
-        <div className={`week-phase-banner ${phaseInfo.cls}`}>
-          <span style={{ fontSize:'1.5rem' }}>{phaseInfo.icon}</span>
-          <div>
-            <div style={{ fontWeight:600, fontSize:'.88rem' }}>{phaseInfo.label}</div>
-            <div style={{ fontSize:'.76rem', color:'var(--txt2)' }}>{phaseInfo.sub}</div>
-          </div>
-          <div style={{ marginLeft:'auto', textAlign:'right' }}>
-            <div style={{ fontWeight:600, fontSize:'.88rem' }}>{weekDone}/3</div>
-            <div style={{ fontSize:'.72rem', color:'var(--txt3)' }}>Training diese Woche</div>
-          </div>
-        </div>
-
-        {/* PPL-Schema Legende */}
-        <div className="sstrip" style={{ marginBottom:'.9rem' }}>
-          <div style={{ fontWeight:600, fontSize:'.82rem', marginBottom:'4px' }}>Push-Pull-Legs Split</div>
-          <div style={{ display:'flex', gap:'6px', flexWrap:'wrap', fontSize:'.76rem', color:'var(--txt2)' }}>
-            <span>💪 <strong>Mo</strong> = Push (Brust/Schulter/Trizeps)</span>
-            <span>🔄 <strong>Mi</strong> = Pull (Rücken/Bizeps)</span>
-            <span>🦵 <strong>Fr</strong> = Legs (Beine/Bauch)</span>
-            <span>😴 <strong>Di/Do/Sa/So</strong> = Regeneration</span>
-          </div>
-        </div>
-
-        {/* Wochentage */}
-        {days.map(d => {
-          const dateK      = dk(d);
-          const dayPlan    = plan[dateK];
-          if (!dayPlan) return null;
-          const workout    = WORKOUTS.find(w => w.id === dayPlan.workout_id) || WORKOUTS.find(w => w.id === 'rest');
-          const isRest     = workout.id === 'rest';
-          const isDone     = !!dayPlan.workout_done;
-          const isToday    = dateK === todayKey;
-          const phase      = getTrainingPhase(d);
-          const exercises  = adjustedExercises(workout, phase);
-          const phaseLabel = { 1:'2 Sätze', 2:'3 Sätze', 3:'4 Sätze' }[phase];
-          const phaseClass = { 1:'week12', 2:'', 3:'week56' }[phase];
-
-          return (
-            <div key={dateK} className={`workout-card ${isDone ? 'done' : ''} ${isRest ? 'rest-day' : ''}`}
-                 style={{ border: isToday ? `2px solid ${isRest ? 'var(--cream3)' : 'var(--sport)'}` : undefined }}>
-
-              {/* Header */}
-              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'.7rem', flexWrap:'wrap', gap:'8px' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-                  <div style={{ width:36, height:36, borderRadius:'10px', background: isRest ? 'var(--cream2)' : 'var(--sport-p)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'1.1rem', flexShrink:0 }}>
-                    {isRest ? '😴' : workout.id === 'ppl_push' ? '💪' : workout.id === 'ppl_pull' ? '🔄' : '🦵'}
-                  </div>
-                  <div>
-                    <div style={{ display:'flex', alignItems:'center', gap:'6px', flexWrap:'wrap' }}>
-                      <span style={{ fontWeight:600, fontSize:'.9rem' }}>
-                        {DAYS[d.getDay() === 0 ? 6 : d.getDay()-1]}, {d.getDate()}. {MONTHS[d.getMonth()]}
-                      </span>
-                      {isToday && <span className="badge badge-teal">Heute</span>}
-                      {isDone  && <span className="badge badge-green">✓ Erledigt</span>}
-                    </div>
-                    <div style={{ fontSize:'.8rem', color:'var(--txt2)', marginTop:'1px' }}>{workout.name}</div>
-                  </div>
-                </div>
-                <div style={{ display:'flex', gap:'6px', alignItems:'center', flexWrap:'wrap' }}>
-                  {!isRest && <span className={`sets-badge ${phaseClass}`}>{phaseLabel}</span>}
-                  {!isRest && !isDone && (
-                    <button type="button" className="btn btn-sm btn-secondary"
-                            onClick={() => shiftWorkout(dateK)}
-                            title="Workout auf morgen verschieben">
-                      📅 Morgen
-                    </button>
-                  )}
-                  {!isRest && (
-                    <button type="button"
-                            className={`btn btn-sm ${isDone ? 'btn-secondary' : 'btn-sport'}`}
-                            onClick={() => toggleWorkoutDone(dateK)}>
-                      {isDone ? '↩' : '✓ Fertig'}
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Übungen */}
-              {!isRest && (
-                <div>
-                  {exercises.map((ex, i) => (
-                    <div key={i} className="exercise-row">
-                      <div className="exercise-num">{i+1}</div>
-                      <div style={{ flex:1 }}>
-                        <div style={{ fontWeight:500, fontSize:'.84rem' }}>{ex.name}</div>
-                        <div style={{ fontSize:'.76rem', color:'var(--txt3)', marginTop:'2px' }}>{ex.note}</div>
-                      </div>
-                      <div style={{ textAlign:'right', flexShrink:0 }}>
-                        <div style={{ fontWeight:600, fontSize:'.82rem', color:'var(--sport)' }}>{ex.sets}×{ex.reps}</div>
-                        <div style={{ fontSize:'.68rem', color:'var(--txt3)' }}>Sätze×Wdh</div>
-                      </div>
-                    </div>
-                  ))}
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:'.75rem', paddingTop:'.6rem', borderTop:'1px solid var(--cream2)' }}>
-                    <span style={{ fontSize:'.76rem', color:'var(--txt3)' }}>
-                      🔥 {workout.kcalBurn} kcal verbrannt · {workout.type}
-                    </span>
-                    <span style={{ fontSize:'.76rem', color:'var(--txt3)' }}>
-                      ⏱ ca. {phase === 1 ? '30' : phase === 2 ? '60' : '90'} Min
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {isRest && (
-                <div style={{ fontSize:'.82rem', color:'var(--txt3)', padding:'.3rem 0' }}>
-                  Aktive Erholung: lockeres Spazieren, Mobilität, Stretching.
-                  Kein intensives Training. Lass deinen Körper regenerieren.
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
-  }
-
-  // ── KALENDER ──────────────────────────────────────────────────────────────
-  function CalendarView({ plan, updatePlanDay, curWeek, setCurWeek, toggleEaten, batchMode,
-                          setBatchMode, applyBatch, allRecipes, leftovers, toast, setModal }) {
-    const days    = weekDates(curWeek);
-    const dragRef = useRef(null);
-    const [dragOver, setDragOver] = useState(null);
-    const todayKey = dk(new Date());
-
-    function prev() { const d = new Date(curWeek); d.setDate(d.getDate()-7); setCurWeek(getMonday(d)); }
-    function next() { const d = new Date(curWeek); d.setDate(d.getDate()+7); setCurWeek(getMonday(d)); }
-
-    function onDragStart(e, dateK, meal) { dragRef.current = { dateK, meal }; e.dataTransfer.effectAllowed = 'move'; }
-    function onDrop(tDateK, tMeal) {
-      if (!dragRef.current) return;
-      const { dateK, meal } = dragRef.current;
-      if (dateK === tDateK && meal === tMeal) { dragRef.current = null; setDragOver(null); return; }
-      const src = plan[dateK]?.[meal]; const tgt = plan[tDateK]?.[tMeal];
-      updatePlanDay(dateK, { [meal]: tgt }); updatePlanDay(tDateK, { [tMeal]: src });
-      toast('🔄 Mahlzeiten getauscht!');
-      dragRef.current = null; setDragOver(null);
-    }
-
-    const wlbl = `KW ${getISOWeek(curWeek)} · ${curWeek.getDate()}. ${MONTHS[curWeek.getMonth()]} ${curWeek.getFullYear()}`;
-
-    return (
-      <div>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:'.75rem', flexWrap:'wrap', gap:'8px' }}>
-          <div className="week-nav">
-            <button type="button" className="week-nav-btn" onClick={prev}>‹</button>
-            <span style={{ fontFamily:"'DM Serif Display',serif", fontSize:'.92rem' }}>{wlbl}</span>
-            <button type="button" className="week-nav-btn" onClick={next}>›</button>
-          </div>
-          <label style={{ display:'flex', alignItems:'center', gap:'7px', cursor:'pointer', fontSize:'.78rem', fontWeight:500, margin:0, background: batchMode ? 'var(--teal-p)' : 'var(--cream2)', padding:'8px 12px', borderRadius:'8px', border:'1px solid ' + (batchMode ? 'var(--teal-l)' : 'var(--cream3)') }}>
-            <input type="checkbox" checked={batchMode} onChange={e => setBatchMode(e.target.checked)} style={{ width:16, height:16, accentColor:'var(--teal)' }}/>
-            📦 Vorkochen
-          </label>
-        </div>
-
-        {leftovers.length > 0 && (
-          <div className="leftover-card">
-            <div style={{ fontWeight:500, fontSize:'.81rem', marginBottom:'4px' }}>♻️ Diese Woche nur einmal – nutzen statt neu kaufen:</div>
-            <div style={{ display:'flex', gap:'4px', flexWrap:'wrap', marginTop:'4px' }}>
-              {leftovers.map(l => <span key={l} className="tag">↪ {l}</span>)}
-            </div>
-          </div>
-        )}
-
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:'3px', overflowX:'auto', minWidth:0 }} className="calg">
-          {days.map(d => {
-            const dateK   = dk(d);
-            const day     = plan[dateK];
-            const isToday = dateK === todayKey;
-            // Workout-Indikator im Kalender
-            const wout    = day ? WORKOUTS.find(w => w.id === day.workout_id) : null;
-            const wDone   = !!day?.workout_done;
-            return (
-              <div key={dateK} className="day-col" style={{ border: isToday ? '2px solid var(--teal)' : '1px solid var(--cream3)', opacity: day ? 1 : .45 }}>
-                <div className="day-header" style={{ background: isToday ? 'var(--teal)' : 'var(--navy)' }}>
-                  {DAYS[d.getDay() === 0 ? 6 : d.getDay()-1]} {d.getDate()}.
-                </div>
-                {/* Sport-Indikator */}
-                {wout && wout.id !== 'rest' && (
-                  <div style={{ background: wDone ? 'var(--green-p)' : 'var(--sport-p)', padding:'2px 4px', fontSize:'.55rem', color: wDone ? '#1a4a28' : 'var(--sport)', textAlign:'center', borderBottom:'1px solid var(--cream2)' }}>
-                    {wDone ? '✓ ' : ''}{wout.id === 'ppl_push' ? '💪' : wout.id === 'ppl_pull' ? '🔄' : '🦵'}
-                  </div>
-                )}
-                <div style={{ padding:'3px', display:'flex', flexDirection:'column', gap:'3px' }}>
-                  {day ? ['breakfast','lunch','dinner'].map(m => {
-                    const r     = day[m];
-                    const eaten = day.eaten[m] || false;
-                    const mI    = { breakfast:'🌅', lunch:'☀️', dinner:'🌙' }[m];
-                    const isPcos = r?.tags?.includes('pcos');
-                    return (
-                      <div key={m}
-                           className={`meal-card ${eaten ? 'eaten' : ''} ${dragOver === dateK+m ? 'drag-active' : ''}`}
-                           draggable
-                           onDragStart={e => onDragStart(e, dateK, m)}
-                           onDragOver={e  => { e.preventDefault(); setDragOver(dateK+m); }}
-                           onDragLeave={() => setDragOver(null)}
-                           onDrop={e  => { e.preventDefault(); onDrop(dateK, m); }}
-                           style={{ padding:'4px' }}
-                           onClick={() => r && setModal({ dateK, meal:m, recipe:r, day })}>
-                        <div style={{ fontSize:'.56rem', color:'var(--txt3)', marginBottom:'1px' }}>{mI}{isPcos ? ' 🌸' : ''}</div>
-                        <div style={{ fontSize:'.59rem', fontWeight:500, lineHeight:1.25, color: eaten ? 'var(--green)' : 'var(--txt)' }}>{r?.name || '–'}</div>
-                        {r && <div style={{ display:'flex', gap:'2px', marginTop:'2px' }}>
-                          <span style={{ fontSize:'.5rem', background:'var(--teal-p)', color:'#1a5a50', borderRadius:'3px', padding:'1px 3px' }}>{r.macros.protein}p</span>
-                          <span style={{ fontSize:'.5rem', background:'#dbeafe', color:'#1e40af', borderRadius:'3px', padding:'1px 3px' }}>{r.macros.carbs}c</span>
-                        </div>}
-                        <div style={{ display:'flex', gap:'3px', marginTop:'3px', alignItems:'center' }}>
-                          <div onClick={e => { e.stopPropagation(); toggleEaten(dateK, m); }}
-                               className={`check-box ${eaten ? 'checked' : ''}`}
-                               style={{ width:12, height:12, borderRadius:3, borderWidth:'1.5px' }}/>
-                          {batchMode && r && (r.batchDays||1) > 1 && (
-                            <button type="button"
-                                    style={{ fontSize:'.48rem', padding:'1px 3px', background:'var(--teal-p)', border:'1px solid var(--teal-l)', color:'var(--teal)', borderRadius:'3px', cursor:'pointer', flex:1, fontFamily:"'DM Sans',sans-serif" }}
-                                    onClick={e => { e.stopPropagation(); applyBatch(dateK, m, r); }}>
-                              📦{r.batchDays}d
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }) : <div style={{ padding:'6px 4px', fontSize:'.6rem', color:'var(--txt3)' }}>–</div>}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        <p style={{ fontSize:'.73rem', color:'var(--txt3)', marginTop:'8px' }}>
-          💡 Drag &amp; Drop zum Tauschen · Klick = Rezeptdetails · 🌸 = PCOS · 💪🔄🦵 = Training
-        </p>
-      </div>
-    );
-  }
-
-  // ── MEAL MODAL ────────────────────────────────────────────────────────────
-  function MealModal({ modal, onClose, allRecipes, updatePlanDay, batchMode, applyBatch, toast }) {
-    const { dateK, meal, recipe: r } = modal;
-    const [swapOpen, setSwapOpen] = useState(false);
-    const mLabel   = { breakfast:'Frühstück', lunch:'Mittagessen', dinner:'Abendessen' }[meal];
-    const sameType = allRecipes.filter(x => x.type === meal && x.id !== r?.id);
-    function swap(nr) { updatePlanDay(dateK, { [meal]: nr }); toast(`✏️ Ersetzt: ${nr.name}`); onClose(); }
-    return (
-      <div className="modal-overlay" onClick={onClose}>
-        <div className="modal" onClick={e => e.stopPropagation()}>
-          <span className="modal-drag"/>
-          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:'.85rem' }}>
-            <div>
-              <div style={{ fontSize:'.72rem', color:'var(--txt3)', marginBottom:'2px' }}>{mLabel} · {dateK}</div>
-              <h3 style={{ fontWeight:400, fontSize:'1.25rem', lineHeight:1.2 }}>{r?.name}</h3>
-            </div>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={onClose}>✕</button>
-          </div>
-          {r && <>
-            <div style={{ display:'flex', gap:'5px', flexWrap:'wrap', marginBottom:'.8rem' }}>
-              <span className="rm rm-p">{r.macros.protein}g P</span>
-              <span className="rm rm-c">{r.macros.carbs}g C</span>
-              <span className="rm rm-f">{r.macros.fat}g F</span>
-              <span className="rm rm-k">{r.macros.kcal} kcal</span>
-              {r.prepMin && <span className="badge badge-blue">⏱ {r.prepMin} Min</span>}
-            </div>
-            <div style={{ display:'flex', gap:'4px', flexWrap:'wrap', marginBottom:'.8rem' }}>
-              {r.tags?.map(t => <TagBadge key={t} tag={t}/>)}
-            </div>
-            <div className="form-group">
-              <label>Zutaten</label>
-              <ul style={{ paddingLeft:'1.15rem', fontSize:'.82rem', color:'var(--txt2)', lineHeight:1.7 }}>
-                {r.ingredients.map((x, n) => <li key={n}>{x}</li>)}
-              </ul>
-            </div>
-            {r.steps && <div className="form-group">
-              <label>Zubereitung</label>
-              <p style={{ fontSize:'.82rem', color:'var(--txt2)', lineHeight:1.6, background:'var(--cream2)', padding:'10px 12px', borderRadius:'8px' }}>{r.steps}</p>
-            </div>}
-            {batchMode && (r.batchDays||1) > 1 && (
-              <button type="button" className="btn btn-amber" style={{ width:'100%', marginBottom:'8px' }}
-                      onClick={() => { applyBatch(dateK, meal, r); onClose(); }}>
-                📦 Als Vorkochen einplanen ({r.batchDays} Tage)
-              </button>
-            )}
-          </>}
-          <hr className="divl"/>
-          <button type="button" className="btn btn-secondary" style={{ width:'100%', marginBottom:'8px' }} onClick={() => setSwapOpen(s => !s)}>
-            🔄 Anderes Rezept wählen {swapOpen ? '▲' : '▼'}
-          </button>
-          {swapOpen && (
-            <div style={{ maxHeight:'240px', overflowY:'auto', display:'flex', flexDirection:'column', gap:'4px' }}>
-              {sameType.map(x => (
-                <div key={x.id} className="meal-card" onClick={() => swap(x)} style={{ padding:'9px 12px' }}>
-                  <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', gap:'8px' }}>
-                    <div style={{ fontWeight:500, fontSize:'.82rem' }}>{x.name}</div>
-                    {x.tags?.includes('pcos') && <span className="badge badge-purple" style={{ flexShrink:0 }}>🌸</span>}
-                  </div>
-                  <div style={{ display:'flex', gap:'4px', marginTop:'4px' }}>
-                    <span className="rm rm-p">{x.macros.protein}g P</span>
-                    <span className="rm rm-c">{x.macros.carbs}g C</span>
-                    <span className="rm rm-k">{x.macros.kcal} kcal</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // ── EINKAUFSLISTE ─────────────────────────────────────────────────────────
-  function ShoppingView({ shoppingList, shopWeek, setShopWeek, leftovers }) {
-    const [checked, setChecked] = useState({});
-    const [hide,    setHide]    = useState(false);
-    const [search,  setSearch]  = useState('');
-    const [manual,  setManual]  = useState([]);
-    const [manInp,  setManInp]  = useState('');
-
-    const catMap = {
-      Gemüse:['zucchini','brokkoli','spinat','paprika','aubergine','tomate','karotte','gurke','erbsen','avocado','süßkartoffel','frühlingszwiebeln','rucola','sellerie','kürbis','blumenkohl','spargel','champignon'],
-      Eiweiß:['eier','tofu','tempeh','halloumi','mozzarella','parmesan','feta','ricotta','hüttenkäse','skyr','quark','camembert','lupinen','paneer'],
-      Getreide:['haferflocken','quinoa','reis','nudeln','tortilla','couscous','bulgur','vollkornbrot','kräcker'],
-      Hülsenfrüchte:['linsen','kichererbsen','bohnen','edamame','sojaschnetzel','sojahack'],
-      Milchprodukte:['joghurt','milch','hafermilch','mandelmilch','kokosmilch','frischkäse','butter'],
-      Nüsse:['walnüsse','erdnussmus','chiasamen','leinsamen','sesam','hanfsamen','mandelmus','tahini','mandeln','pinienkerne'],
-      Gewürze:['salz','pfeffer','kurkuma','cumin','koriander','paprikapulver','oregano','thymian','zimt','ingwer','knoblauch','chili','currypaste','tamari','sesamöl','olivenöl','zitrone','limette','honig','ahornsirup','vanille','reisessig','miso'],
-    };
-
-    const allItems = [...shoppingList, ...manual.map(m => [m, 1])];
-    const filtered = allItems.filter(([k]) => k.toLowerCase().includes(search.toLowerCase()));
-    const cats = { Gemüse:[], Eiweiß:[], Getreide:[], Hülsenfrüchte:[], Milchprodukte:[], Nüsse:[], Gewürze:[], Sonstiges:[] };
-    filtered.forEach(([k, n]) => {
-      if (hide && checked[k]) return;
-      let found = false;
-      for (const [cat, words] of Object.entries(catMap)) {
-        if (words.some(w => k.toLowerCase().includes(w))) { cats[cat].push([k, n]); found = true; break; }
-      }
-      if (!found) cats.Sonstiges.push([k, n]);
-    });
-
-    const done = filtered.filter(([k]) => checked[k]).length;
-    function addManual() { const v = manInp.trim().toLowerCase(); if (!v) return; setManual(m => [...m, v]); setManInp(''); }
-
-    return (
-      <div>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem', flexWrap:'wrap', gap:'8px' }}>
-          <h2 style={{ fontWeight:400 }}>🛒 Einkaufsliste</h2>
-          <div style={{ display:'flex', gap:'5px', alignItems:'center' }}>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => { const d = new Date(shopWeek); d.setDate(d.getDate()-7); setShopWeek(getMonday(d)); }}>‹</button>
-            <span style={{ fontSize:'.8rem', padding:'0 6px', whiteSpace:'nowrap' }}>KW {getISOWeek(shopWeek)}</span>
-            <button type="button" className="btn btn-secondary btn-sm" onClick={() => { const d = new Date(shopWeek); d.setDate(d.getDate()+7); setShopWeek(getMonday(d)); }}>›</button>
-          </div>
-        </div>
-        <div className="card" style={{ marginBottom:'.75rem' }}>
-          <div style={{ display:'flex', gap:'8px' }}>
-            <input placeholder="Eigenes Produkt hinzufügen…" value={manInp} onChange={e => setManInp(e.target.value)} onKeyDown={e => e.key==='Enter' && addManual()} style={{ flex:1 }}/>
-            <button type="button" className="btn btn-primary btn-sm" onClick={addManual}>+ Hinzu</button>
-          </div>
-        </div>
-        <div style={{ display:'flex', gap:'7px', marginBottom:'.9rem', alignItems:'center', flexWrap:'wrap' }}>
-          <input placeholder="Suche…" value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth:200 }}/>
-          <span className="badge badge-teal">{done}/{filtered.length} ✓</span>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setHide(h => !h)}>{hide ? 'Alle zeigen' : 'Erledigte ausblenden'}</button>
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setChecked({})}>Reset</button>
-        </div>
-        {leftovers.length > 0 && (
-          <div className="leftover-card" style={{ marginBottom:'.9rem' }}>
-            <div style={{ fontWeight:500, fontSize:'.8rem' }}>♻️ Reste nutzen – nicht extra kaufen:</div>
-            <div style={{ display:'flex', gap:'4px', flexWrap:'wrap', marginTop:'5px' }}>
-              {leftovers.map(l => <span key={l} className="tag">✓ {l}</span>)}
-            </div>
-          </div>
-        )}
-        <div className="g2">
-          {Object.entries(cats).filter(([,items]) => items.length > 0).map(([cat, items]) => (
-            <div key={cat} className="card">
-              <div style={{ fontWeight:600, fontSize:'.74rem', color:'var(--txt3)', marginBottom:'8px', textTransform:'uppercase', letterSpacing:'.07em' }}>{cat}</div>
-              {items.map(([k, n]) => (
-                <div key={k} className="shopping-item" style={{ opacity: checked[k] ? .4 : 1 }}>
-                  <div className={`check-box ${checked[k] ? 'checked' : ''}`} onClick={() => setChecked(c => ({...c, [k]: !c[k]}))}/>
-                  <span style={{ flex:1, fontSize:'.82rem', textDecoration: checked[k] ? 'line-through' : 'none', color: checked[k] ? 'var(--txt3)' : 'var(--txt)' }}>{k}</span>
-                  {n > 1 && <span className="badge badge-blue" style={{ fontSize:'.64rem' }}>×{n}</span>}
-                </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  // ── HEALTH VIEW ───────────────────────────────────────────────────────────
-  function HealthView({ supplements, toggleSupplement }) {
-    const today  = new Date();
-    const todayK = dk(today);
-    const weekD  = Array.from({length:7}, (_, i) => {
-      const d = new Date(today); d.setDate(d.getDate()-6+i);
-      return { date:d, k:dk(d), label: DAYS[d.getDay() === 0 ? 6 : d.getDay()-1] };
-    });
-
-    const muscleCards = [
-      { icon:'💪', name:'Kreatin Monohydrat',    dose:'5 g täglich',           bg:'var(--teal-p)',  detail:'Erhöht Kraftleistung und Muskelmasse nachweislich. Täglich 5 g, keine Ladephase nötig. Bei gesunden Nieren völlig unbedenklich.' },
-      { icon:'🥛', name:'Protein-Timing',         dose:'25–40 g nach Training', bg:'var(--teal-p)',  detail:'Nach dem Training 25–40 g Protein aufnehmen – optimiert die Muskelproteinsynthese. Quark, Skyr, Tofu oder Hülsenfrüchte eignen sich ideal.' },
-      { icon:'😴', name:'Schlaf & Regeneration',  dose:'7–9 Stunden',           bg:'var(--green-p)', detail:'Der wichtigste Muskelaufbau-Faktor: Im Tiefschlaf wird Wachstumshormon ausgeschüttet. Konstanter Schlafrhythmus ist entscheidend.' },
-      { icon:'💧', name:'Hydrierung',             dose:'2,5–3,5 L täglich',     bg:'#dbeafe',        detail:'Ausreichend Wasser verbessert Trainingsleistung und Proteinverwertung spürbar. Vor jeder Mahlzeit 1 Glas trinken hilft auch beim Sättigungsgefühl.' },
-    ];
-    const pcosCards = [
-      { icon:'🌸', name:'Low-GI Kohlenhydrate',  detail:'Vollkornprodukte, Hülsenfrüchte und Gemüse statt Weißmehl und Zucker. Stabilisiert den Blutzucker und reduziert Insulinresistenz – das Kernproblem bei PCOS.' },
-      { icon:'🫘', name:'Hülsenfrüchte täglich', detail:'Linsen, Kichererbsen, Bohnen: pflanzliches Protein, Ballaststoffe, Magnesium. Unterstützen Hormonbalance, Darmgesundheit und Blutfettwerte.' },
-      { icon:'🐟', name:'Omega-3 täglich',        detail:'Leinöl, Walnüsse und Algenöl reduzieren Entzündungen. Bei PCOS sind Entzündungsmarker oft erhöht. Täglich 2–3 g EPA+DHA anstreben.' },
-      { icon:'🚫', name:'Kein Zucker & Weißmehl',detail:'Raffinierter Zucker verstärkt Insulinresistenz massiv. Keine Süßigkeiten, kein Weißbrot, kein Fruchtsaft. Natürliche Süße aus Beeren ist in Ordnung.' },
-      { icon:'🔋', name:'Magnesium & Zink',       detail:'Beide Mineralstoffe bei PCOS häufig mangelhaft. Magnesium 300–400 mg verbessert Insulinsensitivität. Zink 10–15 mg unterstützt die Hormonsynthese.' },
-      { icon:'☀️', name:'Vitamin D3 + K2',        detail:'Enger Zusammenhang zwischen Vitamin-D-Mangel und PCOS. 2000–4000 IE D3 täglich, immer mit K2 (100 µg) kombinieren. Blutwert prüfen lassen.' },
-    ];
-
-    return (
-      <div>
-        <h2 style={{ marginBottom:'1.35rem', fontWeight:400 }}>🩺 Gesundheits-Guide</h2>
-        <div className="card">
-          <h3 style={{ marginBottom:'.85rem', fontWeight:400 }}>💪 Muskelaufbau – Ernährungsbasics</h3>
-          <div className="g2">
-            {muscleCards.map(s => (
-              <div key={s.name} style={{ background:s.bg, borderRadius:'var(--r)', padding:'.8rem', border:'1px solid rgba(0,0,0,.06)' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'8px', marginBottom:'4px' }}>
-                  <span style={{ fontSize:'1rem' }}>{s.icon}</span>
-                  <div>
-                    <div style={{ fontWeight:600, fontSize:'.82rem' }}>{s.name}</div>
-                    <span className="badge badge-teal" style={{ marginTop:'2px', display:'inline-flex' }}>{s.dose}</span>
-                  </div>
-                </div>
-                <p style={{ fontSize:'.76rem', color:'var(--txt2)', lineHeight:1.5 }}>{s.detail}</p>
-              </div>
-            ))}
-          </div>
-          <div className="istrip" style={{ marginTop:'1rem', marginBottom:0 }}>
-            <div style={{ fontWeight:600, fontSize:'.82rem', marginBottom:'3px' }}>📊 Dein Aufbau-Ziel</div>
-            <p style={{ fontSize:'.78rem', color:'var(--txt2)', lineHeight:1.5 }}>
-              +250 kcal Überschuss täglich · 1,7 g Protein/kg KG · Krafttraining 3–4×/Woche ·
-              Realistisch: 0,5–1 kg Muskelmasse pro Monat.
-            </p>
-          </div>
-        </div>
-
-        <div className="card">
-          <h3 style={{ marginBottom:'.85rem', fontWeight:400 }}>🌸 PCOS-Ernährungs-Basics</h3>
-          <div className="pstrip" style={{ marginBottom:'.9rem' }}>
-            <div style={{ fontWeight:600, fontSize:'.82rem', marginBottom:'3px' }}>Was bedeutet PCOS-freundliche Ernährung?</div>
-            <p style={{ fontSize:'.77rem', color:'var(--txt2)', lineHeight:1.5 }}>
-              PCOS ist eng mit Insulinresistenz verknüpft. Alle Rezepte mit 🌸 sind PCOS-konform:
-              Low-GI, kein Haushaltszucker, kein Weißmehl, reich an Ballaststoffen und Antioxidantien.
-            </p>
-          </div>
-          <div className="g2">
-            {pcosCards.map(p => (
-              <div key={p.name} style={{ background:'var(--purple-p)', borderRadius:'var(--r)', padding:'.75rem', border:'1px solid rgba(106,74,138,.1)' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'7px', marginBottom:'3px' }}>
-                  <span style={{ fontSize:'.95rem' }}>{p.icon}</span>
-                  <span style={{ fontWeight:600, fontSize:'.8rem' }}>{p.name}</span>
-                </div>
-                <p style={{ fontSize:'.75rem', color:'var(--txt2)', lineHeight:1.5 }}>{p.detail}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="card">
-          <h3 style={{ marginBottom:'.4rem', fontWeight:400 }}>💊 Supplement-Wochenübersicht</h3>
-          <p style={{ fontSize:'.78rem', color:'var(--txt3)', marginBottom:'1rem' }}>Kreatin, D3+K2, B12/Omega-3 – täglich abhaken</p>
-          <div style={{ overflowX:'auto' }}>
-            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:'.79rem', minWidth:'350px' }}>
-              <thead><tr>
-                <th style={{ textAlign:'left', padding:'6px 4px', fontWeight:500, color:'var(--txt3)' }}>Suppl.</th>
-                {weekD.map(w => <th key={w.k} style={{ padding:'6px 4px', textAlign:'center', fontWeight:500, color: w.k === todayK ? 'var(--teal)' : 'var(--txt3)' }}>{w.label}</th>)}
-              </tr></thead>
-              <tbody>
-              {[['💪 Kreatin','mg'],['☀️ D3+K2','k'],['💊 B12/Ω3','salt']].map(([lbl, field]) => (
-                <tr key={field}>
-                  <td style={{ padding:'6px 4px', fontWeight:500, whiteSpace:'nowrap' }}>{lbl}</td>
-                  {weekD.map(w => {
-                    const done = supplements[w.k + '_' + field] || false;
-                    return (
-                      <td key={w.k} style={{ padding:'6px 4px', textAlign:'center' }}>
-                        <div className={`check-box ${done ? 'checked' : ''}`}
-                             style={{ margin:'0 auto', cursor: w.k === todayK ? 'pointer' : 'default', opacity: w.k === todayK ? 1 : .55 }}
-                             onClick={() => w.k === todayK && toggleSupplement(w.k, field)}/>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div className="cardf">
-          <h3 style={{ marginBottom:'.85rem', fontWeight:400 }}>✅ Tägliche Ernährungs-Checkliste</h3>
-          <div className="g2">
-            {[
-              ['🥦','400 g Gemüse täglich',    'Verschiedene Farben – viele Antioxidantien'],
-              ['🫘','Hülsenfrüchte täglich',    'Linsen, Bohnen, Kichererbsen oder Edamame'],
-              ['🌾','Nur Vollkorn',             'Kein Weißmehl, kein Weißbrot, kein weißer Reis'],
-              ['💧','2,5–3,5 L Wasser täglich','Vor Mahlzeiten trinken – bessere Sättigung'],
-              ['🚫','Kein freier Zucker',       'Kein Haushaltszucker, kein Saft, keine Süßigkeiten'],
-              ['🥚','Protein auf 4 Mahlzeiten','25–40 g pro Mahlzeit für optimale Verwertung'],
-            ].map(([ic, t, d]) => (
-              <div key={t} style={{ background:'#fff', borderRadius:'10px', padding:'.8rem', border:'1px solid var(--cream3)' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'3px' }}>
-                  <span style={{ fontSize:'.95rem' }}>{ic}</span>
-                  <span style={{ fontWeight:600, fontSize:'.8rem' }}>{t}</span>
-                </div>
-                <div style={{ fontSize:'.73rem', color:'var(--txt3)', lineHeight:1.4 }}>{d}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // ── REZEPT-BIBLIOTHEK ─────────────────────────────────────────────────────
-  function RecipesView({ customRecs, allRecipes, addCustomRecipe, deleteCustomRecipe, toast }) {
-    const [filter,   setFilter]   = useState('all');
-    const [tagF,     setTagF]     = useState('all');
-    const [showForm, setShowForm] = useState(false);
-    const [editR,    setEditR]    = useState(null);
-    const ef = { name:'', type:'breakfast', prepMin:15, kcal:'', carbs:'', protein:'', fat:'', batchDays:1, ingredients:'', steps:'', pcos:true };
-    const [form, setForm] = useState(ef);
-
-    function openNew()   { setForm(ef); setEditR(null); setShowForm(true); }
-    function openEdit(r) {
-      setForm({ name:r.name, type:r.type, prepMin:r.prepMin||15, kcal:r.macros.kcal, carbs:r.macros.carbs, protein:r.macros.protein, fat:r.macros.fat, batchDays:r.batchDays||1, ingredients:(r.ingredients||[]).join('\n'), steps:r.steps||'', pcos:r.tags?.includes('pcos')||false });
-      setEditR(r); setShowForm(true);
-    }
-    async function save() {
-      if (!form.name || !form.kcal) { toast('⚠️ Name & Kalorien sind Pflichtfelder'); return; }
-      const tags = ['eigenes']; if (form.pcos) tags.push('pcos');
-      const nr = { name:form.name, type:form.type, prepMin:parseInt(form.prepMin)||15, macros:{ kcal:parseInt(form.kcal)||0, carbs:parseInt(form.carbs)||0, protein:parseInt(form.protein)||0, fat:parseInt(form.fat)||0 }, ingredients:form.ingredients.split('\n').filter(Boolean), steps:form.steps, tags, batchDays:parseInt(form.batchDays)||1 };
-      if (editR) { await deleteCustomRecipe(editR); await addCustomRecipe(nr); toast('✏️ Aktualisiert!'); }
-      else await addCustomRecipe(nr);
-      setShowForm(false); setEditR(null); setForm(ef);
-    }
-
-    const filtered = allRecipes.filter(r => {
-      const tok = filter === 'all' || r.type === filter;
-      const gok = tagF   === 'all' || (r.tags||[]).includes(tagF);
-      return tok && gok;
-    });
-
-    return (
-      <div>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'1rem', flexWrap:'wrap', gap:'8px' }}>
-          <h2 style={{ fontWeight:400 }}>📖 Rezept-Bibliothek</h2>
-          <button type="button" className="btn btn-primary" onClick={openNew}>+ Eigenes Rezept</button>
-        </div>
-
-        {showForm && (
-          <div className="card" style={{ border:'2px solid var(--teal-l)', marginBottom:'1rem' }}>
-            <h3 style={{ marginBottom:'.9rem', fontWeight:400 }}>{editR ? 'Rezept bearbeiten' : 'Neues Rezept'}</h3>
-            <div className="g2">
-              <div className="form-group"><label>Name *</label><input value={form.name} onChange={e => setForm(f => ({...f, name:e.target.value}))} placeholder="z.B. Linsen-Bowl"/></div>
-              <div className="form-group"><label>Typ</label>
-                <select value={form.type} onChange={e => setForm(f => ({...f, type:e.target.value}))}>
-                  <option value="breakfast">Frühstück</option>
-                  <option value="lunch">Mittagessen</option>
-                  <option value="dinner">Abendessen</option>
-                </select>
-              </div>
-            </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(5,1fr)', gap:'7px' }}>
-              {[['Kcal *','kcal'],['Carbs g','carbs'],['Protein g','protein'],['Fett g','fat'],['Batch d','batchDays']].map(([l,k]) => (
-                <div key={k} className="form-group"><label>{l}</label><input type="number" value={form[k]} onChange={e => setForm(f => ({...f, [k]:e.target.value}))}/></div>
-              ))}
-            </div>
-            <div className="form-group">
-              <label style={{ display:'flex', alignItems:'center', gap:'7px', cursor:'pointer', marginBottom:0 }}>
-                <input type="checkbox" checked={form.pcos} onChange={e => setForm(f => ({...f, pcos:e.target.checked}))} style={{ width:16, height:16, accentColor:'var(--purple)' }}/>
-                🌸 PCOS-freundlich (Low-GI, kein Zucker/Weißmehl)
-              </label>
-            </div>
-            <div className="form-group"><label>Zutaten (eine pro Zeile)</label><textarea rows={4} value={form.ingredients} onChange={e => setForm(f => ({...f, ingredients:e.target.value}))} placeholder={'200g Tofu\n150g Linsen\n1 Paprika'}/></div>
-            <div className="form-group"><label>Zubereitung</label><textarea rows={3} value={form.steps} onChange={e => setForm(f => ({...f, steps:e.target.value}))}/></div>
-            <div style={{ display:'flex', gap:'8px' }}>
-              <button type="button" className="btn btn-primary" onClick={save}>{editR ? 'Speichern' : 'Hinzufügen'}</button>
-              <button type="button" className="btn btn-secondary" onClick={() => { setShowForm(false); setEditR(null); }}>Abbrechen</button>
-            </div>
-          </div>
-        )}
-
-        <div className="tabs">
-          {[['all','Alle'],['breakfast','Frühstück'],['lunch','Mittag'],['dinner','Abendessen']].map(([k,l]) => (
-            <button key={k} type="button" className={`tab ${filter===k ? 'active' : ''}`} onClick={() => setFilter(k)}>{l}</button>
-          ))}
-        </div>
-        <div style={{ display:'flex', gap:'4px', flexWrap:'wrap', marginBottom:'.9rem' }}>
-          {[['all','Alle'],['pcos','🌸 PCOS'],['lowgi','📉 Low-GI'],['protein','💪 Protein'],['legumes','🫘 Hülsenf.'],['batch','📦 Batch'],['muskelaufbau','🏋️ Aufbau']].map(([k,l]) => (
-            <button key={k} type="button"
-                    className={`badge ${tagF===k ? 'badge-teal' : 'badge-amber'}`}
-                    style={{ cursor:'pointer', padding:'5px 10px', fontSize:'.76rem', border:'none', fontFamily:"'DM Sans',sans-serif", minHeight:'28px' }}
-                    onClick={() => setTagF(k)}>{l}</button>
-          ))}
-        </div>
-        <p style={{ fontSize:'.75rem', color:'var(--txt3)', marginBottom:'.75rem' }}>{filtered.length} Rezepte</p>
-
-        <div className="g3">
-          {filtered.map(r => (
-            <div key={r.id} className="card" style={{ position:'relative', cursor: r.custom ? 'pointer' : 'default' }} onClick={() => r.custom && openEdit(r)}>
-              {r.custom && <span className="badge badge-coral" style={{ position:'absolute', top:'12px', right:'12px' }}>Eigenes</span>}
-              {r.tags?.includes('pcos') && <span style={{ position:'absolute', top: r.custom ? '33px' : '12px', right:'13px', fontSize:'.95rem' }}>🌸</span>}
-              <div style={{ fontWeight:500, fontSize:'.86rem', marginBottom:'5px', paddingRight:'52px', lineHeight:1.3 }}>{r.name}</div>
-              <div style={{ display:'flex', gap:'3px', flexWrap:'wrap', marginBottom:'6px' }}>
-                {r.tags?.filter(t => t !== 'eigenes').slice(0,3).map(t => <TagBadge key={t} tag={t}/>)}
-              </div>
-              <div style={{ display:'flex', gap:'3px', flexWrap:'wrap', marginBottom:'6px' }}>
-                <span className="rm rm-p">{r.macros.protein}g P</span>
-                <span className="rm rm-c">{r.macros.carbs}g C</span>
-                <span className="rm rm-f">{r.macros.fat}g F</span>
-                <span className="rm rm-k">{r.macros.kcal} kcal</span>
-              </div>
-              {r.prepMin && <div style={{ fontSize:'.7rem', color:'var(--txt3)', marginBottom:'4px' }}>⏱ {r.prepMin} Min{r.batchDays > 1 ? ' · 📦 ' + r.batchDays + 'd' : ''}</div>}
-              <div style={{ fontSize:'.73rem', color:'var(--txt3)', lineHeight:1.4, marginBottom: r.custom ? '8px' : '0' }}>
-                {r.ingredients?.slice(0,3).join(', ')}{r.ingredients?.length > 3 ? ` +${r.ingredients.length-3}…` : ''}
-              </div>
-              {r.custom && (
-                <div style={{ display:'flex', gap:'5px', marginTop:'4px' }}>
-                  <button type="button" className="btn btn-secondary btn-sm" onClick={e => { e.stopPropagation(); openEdit(r); }}>✏️ Bearbeiten</button>
-                  <button type="button" className="btn btn-danger btn-sm" onClick={e => { e.stopPropagation(); deleteCustomRecipe(r); }}>Löschen</button>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        {modal &&
+          <MealModal
+            modal={modal} onClose={() => setModal(null)}
+            allRecipes={allRecipes} updatePlanDay={updatePlanDay}
+            batchMode={batchMode} applyBatch={applyBatch} toast={toast}/>}
+        {snack &&
+          <Snackbar msg={snack} onClose={() => setSnack(null)}/>}
       </div>
     );
   }
@@ -1595,16 +322,28 @@
   ReactDOM.render(<App/>, document.getElementById('root'));
 </script>
 
+<!-- ⑧ PWA: Service Worker + Manifest -->
 <script>
-  if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(() => {}); }
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
   const _manifest = {
-    name: 'VegeProtein – Ernährungsplan', short_name: 'VegeProtein',
-    start_url: '.', display: 'standalone',
-    background_color: '#f4f1ec', theme_color: '#2d4a6e',
-    icons: [{ src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%232d4a6e'/%3E%3Ctext y='140' font-size='120' text-anchor='middle' x='96'%3E%F0%9F%A5%A6%3C/text%3E%3C/svg%3E", sizes: '192x192', type: 'image/svg+xml' }]
+    name: 'VegeProtein – Ernährungsplan',
+    short_name: 'VegeProtein',
+    start_url: '.',
+    display: 'standalone',
+    background_color: '#f4f1ec',
+    theme_color: '#2d4a6e',
+    icons: [{
+      src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%232d4a6e'/%3E%3Ctext y='140' font-size='120' text-anchor='middle' x='96'%3E%F0%9F%A5%A6%3C/text%3E%3C/svg%3E",
+      sizes: '192x192',
+      type: 'image/svg+xml',
+    }],
   };
   const _blob = new Blob([JSON.stringify(_manifest)], { type: 'application/json' });
-  const _link = document.createElement('link'); _link.rel = 'manifest'; _link.href = URL.createObjectURL(_blob);
+  const _link = document.createElement('link');
+  _link.rel   = 'manifest';
+  _link.href  = URL.createObjectURL(_blob);
   document.head.appendChild(_link);
 </script>
 </body>
