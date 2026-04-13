@@ -8,7 +8,16 @@
    ══════════════════════════════════════════════════════════════ */
 
 // ── DATUM-UTILITIES ───────────────────────────────────────────────────────
-function dk(d) { return d instanceof Date ? d.toISOString().slice(0, 10) : d; }
+// Lokales Datum als YYYY-MM-DD -- NICHT toISOString() verwenden,
+// da das UTC zurueckgibt und in MESZ (UTC+2) nach 22:00 Uhr
+// bereits auf den naechsten Tag springt.
+function dk(d) {
+  if (!(d instanceof Date)) return d;
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const t = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + t;
+}
 function fmt(v) { return typeof v === 'number' ? Math.round(v) : v; }
 
 function getMonday(d) {
